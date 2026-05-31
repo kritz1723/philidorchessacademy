@@ -183,7 +183,7 @@
   onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
   const navToggle = document.getElementById('navtoggle');
   const navLinks = document.getElementById('navlinks');
-  navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+  if (navToggle && navLinks) navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
 
   // ---- elements ----
   const tabSignin = document.getElementById('tabSignin');
@@ -197,6 +197,10 @@
 
   function showMsg(text, kind){ msg.textContent = text; msg.className = 'msg show ' + kind; }
   function clearMsg(){ msg.className = 'msg'; }
+
+  // attach tab listeners FIRST so they work even if later code errors
+  tabSignin.addEventListener('click', () => setMode('signin'));
+  tabSignup.addEventListener('click', () => setMode('signup'));
 
   function setMode(mode){
     const signup = mode === 'signup';
@@ -215,9 +219,7 @@
       .addEventListener('click', e => { e.preventDefault(); setMode(signup ? 'signin' : 'signup'); });
     clearMsg();
   }
-  tabSignin.addEventListener('click', () => setMode('signin'));
-  tabSignup.addEventListener('click', () => setMode('signup'));
-  setMode('signin');
+  setMode(location.hash === '#signup' ? 'signup' : 'signin');
 
   // ---- Supabase init ----
   const configured = window.SUPABASE_URL && !window.SUPABASE_URL.includes('YOUR-PROJECT');
