@@ -177,106 +177,118 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
 <script>
-  // ---- nav behaviour ----
-  const hdr = document.getElementById('hdr');
-  const onScroll = () => hdr.classList.toggle('scrolled', window.scrollY > 20);
-  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
-  const navToggle = document.getElementById('navtoggle');
-  const navLinks = document.getElementById('navlinks');
-  if (navToggle && navLinks) navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
-
-  // ---- elements ----
-  const tabSignin = document.getElementById('tabSignin');
-  const tabSignup = document.getElementById('tabSignup');
-  const signinForm = document.getElementById('signinForm');
-  const signupForm = document.getElementById('signupForm');
-  const cardTitle = document.getElementById('cardTitle');
-  const cardSub  = document.getElementById('cardSub');
-  const msg = document.getElementById('msg');
-  const footNote = document.getElementById('footNote');
-
-  function showMsg(text, kind){ msg.textContent = text; msg.className = 'msg show ' + kind; }
-  function clearMsg(){ msg.className = 'msg'; }
-
-  // attach tab listeners FIRST so they work even if later code errors
-  tabSignin.addEventListener('click', () => setMode('signin'));
-  tabSignup.addEventListener('click', () => setMode('signup'));
-
-  function setMode(mode){
-    const signup = mode === 'signup';
-    tabSignup.classList.toggle('active', signup);
-    tabSignin.classList.toggle('active', !signup);
-    signupForm.classList.toggle('hidden', !signup);
-    signinForm.classList.toggle('hidden', signup);
-    cardTitle.textContent = signup ? 'Create your account' : 'Welcome back';
-    cardSub.textContent = signup
-      ? 'Set up a parent account to follow your child’s progress.'
-      : 'Sign in to follow your child’s chess journey.';
-    footNote.innerHTML = signup
-      ? 'Already have an account? <a href="#" id="switchLink">Sign in</a>'
-      : 'New here? <a href="#" id="switchLink">Create an account</a>';
-    document.getElementById('switchLink')
-      .addEventListener('click', e => { e.preventDefault(); setMode(signup ? 'signin' : 'signup'); });
-    clearMsg();
-  }
-  setMode(location.hash === '#signup' ? 'signup' : 'signin');
-
-  // ---- Supabase init ----
-  const configured = window.SUPABASE_URL && !window.SUPABASE_URL.includes('YOUR-PROJECT');
-  let supabase = null;
-  if (configured){
-    supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
-    // already logged in? go to dashboard
-    supabase.auth.getSession().then(({data}) => {
-      if (data.session) window.location.href = 'parent-dashboard.html';
-    });
-  } else {
-    document.getElementById('configWarn').classList.remove('hidden');
-  }
-
-  function guard(){
-    if (!supabase){ showMsg('Portal not connected yet — add your Supabase keys first.', 'err'); return false; }
-    return true;
-  }
-
-  // ---- sign in ----
-  signinForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!guard()) return;
-    const btn = signinForm.querySelector('button'); btn.disabled = true; clearMsg();
-    const { error } = await supabase.auth.signInWithPassword({
-      email: document.getElementById('si-email').value.trim(),
-      password: document.getElementById('si-pass').value
-    });
-    btn.disabled = false;
-    if (error){ showMsg(error.message, 'err'); return; }
-    window.location.href = 'parent-dashboard.html';
+  // Surface any error visibly instead of failing silently
+  window.addEventListener('error', function (ev) {
+    var m = document.getElementById('msg');
+    if (m) { m.textContent = 'Script error: ' + (ev.message || ev.error || 'unknown'); m.className = 'msg show err'; }
   });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script>
+  (function () {
+    'use strict';
 
-  // ---- sign up ----
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!guard()) return;
-    const btn = signupForm.querySelector('button'); btn.disabled = true; clearMsg();
-    const { data, error } = await supabase.auth.signUp({
-      email: document.getElementById('su-email').value.trim(),
-      password: document.getElementById('su-pass').value,
-      options: { data: {
-        full_name:   document.getElementById('su-name').value.trim(),
-        phone:       document.getElementById('su-phone').value.trim(),
-        child_name:  document.getElementById('su-child').value.trim(),
-        child_level: document.getElementById('su-level').value
-      } }
-    });
-    btn.disabled = false;
-    if (error){ showMsg(error.message, 'err'); return; }
-    if (data.session){
-      window.location.href = 'parent-dashboard.html';   // email confirmation OFF
-    } else {
-      showMsg('Account created! Check your email to confirm, then sign in.', 'ok');
-      setTimeout(() => setMode('signin'), 1500);
+    var tabSignin  = document.getElementById('tabSignin');
+    var tabSignup  = document.getElementById('tabSignup');
+    var signinForm = document.getElementById('signinForm');
+    var signupForm = document.getElementById('signupForm');
+    var cardTitle  = document.getElementById('cardTitle');
+    var cardSub    = document.getElementById('cardSub');
+    var msg        = document.getElementById('msg');
+    var footNote   = document.getElementById('footNote');
+
+    function showMsg(text, kind){ msg.textContent = text; msg.className = 'msg show ' + kind; }
+    function clearMsg(){ msg.className = 'msg'; }
+
+    function setMode(mode){
+      var signup = mode === 'signup';
+      tabSignup.classList.toggle('active', signup);
+      tabSignin.classList.toggle('active', !signup);
+      signupForm.classList.toggle('hidden', !signup);
+      signinForm.classList.toggle('hidden', signup);
+      cardTitle.textContent = signup ? 'Create your account' : 'Welcome back';
+      cardSub.textContent = signup
+        ? 'Set up a parent account to follow your child’s progress.'
+        : 'Sign in to follow your child’s chess journey.';
+      footNote.innerHTML = signup
+        ? 'Already have an account? <a href="#" id="switchLink">Sign in</a>'
+        : 'New here? <a href="#" id="switchLink">Create an account</a>';
+      var sl = document.getElementById('switchLink');
+      if (sl) sl.addEventListener('click', function(e){ e.preventDefault(); setMode(signup ? 'signin' : 'signup'); });
+      clearMsg();
     }
-  });
+
+    // Tab switching — direct and self-contained
+    tabSignin.addEventListener('click', function(){ setMode('signin'); });
+    tabSignup.addEventListener('click', function(){ setMode('signup'); });
+    setMode(location.hash === '#signup' ? 'signup' : 'signin');
+
+    // ---- nav (mobile menu) ----
+    var navToggle = document.getElementById('navtoggle');
+    var navLinks  = document.getElementById('navlinks');
+    if (navToggle && navLinks) navToggle.addEventListener('click', function(){ navLinks.classList.toggle('open'); });
+    var hdr = document.getElementById('hdr');
+    if (hdr) {
+      var onScroll = function(){ hdr.classList.toggle('scrolled', window.scrollY > 20); };
+      onScroll(); window.addEventListener('scroll', onScroll, { passive:true });
+    }
+
+    // ---- Supabase ----
+    var configured = window.SUPABASE_URL && window.SUPABASE_URL.indexOf('YOUR-PROJECT') === -1;
+    var supabase = null;
+    if (configured && window.supabase && window.supabase.createClient) {
+      supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+      supabase.auth.getSession().then(function(res){
+        if (res.data && res.data.session) window.location.href = 'parent-dashboard.html';
+      });
+    } else {
+      var cw = document.getElementById('configWarn');
+      if (cw) cw.classList.remove('hidden');
+    }
+
+    function guard(){
+      if (!supabase){ showMsg('Portal not connected yet — add your Supabase keys first.', 'err'); return false; }
+      return true;
+    }
+
+    signinForm.addEventListener('submit', async function(e){
+      e.preventDefault();
+      if (!guard()) return;
+      var btn = signinForm.querySelector('button'); btn.disabled = true; clearMsg();
+      var r = await supabase.auth.signInWithPassword({
+        email: document.getElementById('si-email').value.trim(),
+        password: document.getElementById('si-pass').value
+      });
+      btn.disabled = false;
+      if (r.error){ showMsg(r.error.message, 'err'); return; }
+      window.location.href = 'parent-dashboard.html';
+    });
+
+    signupForm.addEventListener('submit', async function(e){
+      e.preventDefault();
+      if (!guard()) return;
+      var btn = signupForm.querySelector('button'); btn.disabled = true; clearMsg();
+      var r = await supabase.auth.signUp({
+        email: document.getElementById('su-email').value.trim(),
+        password: document.getElementById('su-pass').value,
+        options: { data: {
+          full_name:   document.getElementById('su-name').value.trim(),
+          phone:       document.getElementById('su-phone').value.trim(),
+          child_name:  document.getElementById('su-child').value.trim(),
+          child_level: document.getElementById('su-level').value
+        } }
+      });
+      btn.disabled = false;
+      if (r.error){ showMsg(r.error.message, 'err'); return; }
+      if (r.data && r.data.session){
+        window.location.href = 'parent-dashboard.html';
+      } else {
+        showMsg('Account created! Check your email to confirm, then sign in.', 'ok');
+        setTimeout(function(){ setMode('signin'); }, 1500);
+      }
+    });
+  })();
 </script>
 </body>
 </html>
