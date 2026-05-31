@@ -116,8 +116,8 @@
     </div>
 
     <div class="seg" role="tablist">
-      <button id="tabSignin" class="active" type="button">Sign In</button>
-      <button id="tabSignup" type="button">Sign Up</button>
+      <button id="tabSignin" class="active" type="button" onclick="pcaSetMode('signin')">Sign In</button>
+      <button id="tabSignup" type="button" onclick="pcaSetMode('signup')">Sign Up</button>
     </div>
 
     <!-- SIGN IN -->
@@ -174,119 +174,113 @@
   </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase-config.js"></script>
-<script>
-  // Surface any error visibly instead of failing silently
-  window.addEventListener('error', function (ev) {
-    var m = document.getElementById('msg');
-    if (m) { m.textContent = 'Script error: ' + (ev.message || ev.error || 'unknown'); m.className = 'msg show err'; }
-  });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase-config.js"></script>
+<!--
+  Tab switching runs FIRST and has ZERO external dependencies, so the
+  Sign In / Sign Up toggle always works even if the Supabase CDN is slow,
+  blocked, or fails. Supabase is then loaded asynchronously afterwards.
+-->
 <script>
   (function () {
-    'use strict';
+    var byId = function (id) { return document.getElementById(id); };
 
-    var tabSignin  = document.getElementById('tabSignin');
-    var tabSignup  = document.getElementById('tabSignup');
-    var signinForm = document.getElementById('signinForm');
-    var signupForm = document.getElementById('signupForm');
-    var cardTitle  = document.getElementById('cardTitle');
-    var cardSub    = document.getElementById('cardSub');
-    var msg        = document.getElementById('msg');
-    var footNote   = document.getElementById('footNote');
-
-    function showMsg(text, kind){ msg.textContent = text; msg.className = 'msg show ' + kind; }
-    function clearMsg(){ msg.className = 'msg'; }
-
-    function setMode(mode){
+    function setMode(mode) {
       var signup = mode === 'signup';
-      tabSignup.classList.toggle('active', signup);
-      tabSignin.classList.toggle('active', !signup);
-      signupForm.classList.toggle('hidden', !signup);
-      signinForm.classList.toggle('hidden', signup);
-      cardTitle.textContent = signup ? 'Create your account' : 'Welcome back';
-      cardSub.textContent = signup
+      byId('tabSignup').classList.toggle('active', signup);
+      byId('tabSignin').classList.toggle('active', !signup);
+      byId('signupForm').classList.toggle('hidden', !signup);
+      byId('signinForm').classList.toggle('hidden', signup);
+      byId('cardTitle').textContent = signup ? 'Create your account' : 'Welcome back';
+      byId('cardSub').textContent = signup
         ? 'Set up a parent account to follow your child’s progress.'
         : 'Sign in to follow your child’s chess journey.';
-      footNote.innerHTML = signup
-        ? 'Already have an account? <a href="#" id="switchLink">Sign in</a>'
-        : 'New here? <a href="#" id="switchLink">Create an account</a>';
-      var sl = document.getElementById('switchLink');
-      if (sl) sl.addEventListener('click', function(e){ e.preventDefault(); setMode(signup ? 'signin' : 'signup'); });
-      clearMsg();
+      byId('footNote').innerHTML = signup
+        ? 'Already have an account? <a href="#" onclick="pcaSetMode(\'signin\');return false;">Sign in</a>'
+        : 'New here? <a href="#" onclick="pcaSetMode(\'signup\');return false;">Create an account</a>';
+      var m = byId('msg'); if (m) m.className = 'msg';
     }
+    // Expose globally so the inline onclick attributes can call it.
+    window.pcaSetMode = setMode;
 
-    // Tab switching — direct and self-contained
-    tabSignin.addEventListener('click', function(){ setMode('signin'); });
-    tabSignup.addEventListener('click', function(){ setMode('signup'); });
+    // Initial state (respect #signup in the URL).
     setMode(location.hash === '#signup' ? 'signup' : 'signin');
 
-    // ---- nav (mobile menu) ----
-    var navToggle = document.getElementById('navtoggle');
-    var navLinks  = document.getElementById('navlinks');
-    if (navToggle && navLinks) navToggle.addEventListener('click', function(){ navLinks.classList.toggle('open'); });
-    var hdr = document.getElementById('hdr');
+    // Mobile nav toggle (optional, guarded).
+    var navToggle = byId('navtoggle'), navLinks = byId('navlinks');
+    if (navToggle && navLinks) navToggle.addEventListener('click', function () { navLinks.classList.toggle('open'); });
+    var hdr = byId('hdr');
     if (hdr) {
-      var onScroll = function(){ hdr.classList.toggle('scrolled', window.scrollY > 20); };
-      onScroll(); window.addEventListener('scroll', onScroll, { passive:true });
+      var onScroll = function () { hdr.classList.toggle('scrolled', window.scrollY > 20); };
+      onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
     }
+  })();
+</script>
 
-    // ---- Supabase ----
+<!-- Supabase auth: loaded after the page is interactive; failures here never break the tabs. -->
+<script src="js/supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  (function () {
+    var byId = function (id) { return document.getElementById(id); };
+    var msg = byId('msg');
+    function showMsg(text, kind) { msg.textContent = text; msg.className = 'msg show ' + kind; }
+    function clearMsg() { msg.className = 'msg'; }
+
     var configured = window.SUPABASE_URL && window.SUPABASE_URL.indexOf('YOUR-PROJECT') === -1;
-    var supabase = null;
-    if (configured && window.supabase && window.supabase.createClient) {
-      supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
-      supabase.auth.getSession().then(function(res){
+    var sdkReady = window.supabase && window.supabase.createClient;
+    var client = null;
+
+    if (configured && sdkReady) {
+      client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+      client.auth.getSession().then(function (res) {
         if (res.data && res.data.session) window.location.href = 'parent-dashboard.html';
       });
     } else {
-      var cw = document.getElementById('configWarn');
+      var cw = byId('configWarn');
       if (cw) cw.classList.remove('hidden');
     }
 
-    function guard(){
-      if (!supabase){ showMsg('Portal not connected yet — add your Supabase keys first.', 'err'); return false; }
+    function guard() {
+      if (!client) { showMsg('Portal not connected yet — please try again in a moment.', 'err'); return false; }
       return true;
     }
 
-    signinForm.addEventListener('submit', async function(e){
+    byId('signinForm').addEventListener('submit', function (e) {
       e.preventDefault();
       if (!guard()) return;
-      var btn = signinForm.querySelector('button'); btn.disabled = true; clearMsg();
-      var r = await supabase.auth.signInWithPassword({
-        email: document.getElementById('si-email').value.trim(),
-        password: document.getElementById('si-pass').value
+      var btn = e.target.querySelector('button'); btn.disabled = true; clearMsg();
+      client.auth.signInWithPassword({
+        email: byId('si-email').value.trim(),
+        password: byId('si-pass').value
+      }).then(function (r) {
+        btn.disabled = false;
+        if (r.error) { showMsg(r.error.message, 'err'); return; }
+        window.location.href = 'parent-dashboard.html';
       });
-      btn.disabled = false;
-      if (r.error){ showMsg(r.error.message, 'err'); return; }
-      window.location.href = 'parent-dashboard.html';
     });
 
-    signupForm.addEventListener('submit', async function(e){
+    byId('signupForm').addEventListener('submit', function (e) {
       e.preventDefault();
       if (!guard()) return;
-      var btn = signupForm.querySelector('button'); btn.disabled = true; clearMsg();
-      var r = await supabase.auth.signUp({
-        email: document.getElementById('su-email').value.trim(),
-        password: document.getElementById('su-pass').value,
+      var btn = e.target.querySelector('button'); btn.disabled = true; clearMsg();
+      client.auth.signUp({
+        email: byId('su-email').value.trim(),
+        password: byId('su-pass').value,
         options: { data: {
-          full_name:   document.getElementById('su-name').value.trim(),
-          phone:       document.getElementById('su-phone').value.trim(),
-          child_name:  document.getElementById('su-child').value.trim(),
-          child_level: document.getElementById('su-level').value
+          full_name:   byId('su-name').value.trim(),
+          phone:       byId('su-phone').value.trim(),
+          child_name:  byId('su-child').value.trim(),
+          child_level: byId('su-level').value
         } }
+      }).then(function (r) {
+        btn.disabled = false;
+        if (r.error) { showMsg(r.error.message, 'err'); return; }
+        if (r.data && r.data.session) {
+          window.location.href = 'parent-dashboard.html';
+        } else {
+          showMsg('Account created! Check your email to confirm, then sign in.', 'ok');
+          setTimeout(function () { window.pcaSetMode('signin'); }, 1500);
+        }
       });
-      btn.disabled = false;
-      if (r.error){ showMsg(r.error.message, 'err'); return; }
-      if (r.data && r.data.session){
-        window.location.href = 'parent-dashboard.html';
-      } else {
-        showMsg('Account created! Check your email to confirm, then sign in.', 'ok');
-        setTimeout(function(){ setMode('signin'); }, 1500);
-      }
     });
   })();
 </script>
