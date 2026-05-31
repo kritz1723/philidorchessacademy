@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parent Dashboard | Philidor Chess Academy</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15203b; --ink-deep:#0c1322; --ink-soft:#26314d;
+    --cream:#f6f2e9; --cream-2:#efe9dc; --paper:#fbf8f1;
+    --gold:#bf9b54; --gold-bright:#d8b76a;
+    --mint:#bfe7e0; --lav:#d4d6ec; --pink:#e8cfdd;
+    --line:rgba(21,32,59,.14);
+    --shadow:0 24px 60px -28px rgba(12,19,34,.45);
+    --maxw:1180px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--cream);color:var(--ink);font-family:"Hanken Grotesk",sans-serif;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:"Fraunces",serif;font-weight:600;line-height:1.08;letter-spacing:-.01em}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  .eyebrow{font-family:"Hanken Grotesk";font-weight:600;font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);display:inline-flex;align-items:center;gap:.6em}
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--gold)}
+
+  header{position:sticky;top:0;z-index:50;background:rgba(246,242,233,.92);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;max-width:var(--maxw);margin:0 auto}
+  .brand{display:flex;align-items:center;gap:12px;font-family:"Fraunces";font-weight:600;font-size:1.06rem}
+  .brand img{height:40px;width:40px;border-radius:9px;object-fit:cover;box-shadow:0 6px 18px -8px rgba(12,19,34,.5)}
+  .brand span{display:block;font-family:"Hanken Grotesk";font-weight:500;font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-top:1px}
+  .btn{font-family:"Hanken Grotesk";font-weight:600;font-size:.9rem;padding:.6em 1.3em;border-radius:999px;cursor:pointer;border:none;transition:transform .2s,box-shadow .2s,background .2s,color .2s}
+  .btn-outline{background:transparent;border:1.5px solid var(--ink);color:var(--ink)}
+  .btn-outline:hover{background:var(--ink);color:var(--cream)}
+  .btn-gold{background:var(--ink);color:var(--cream)}
+  .btn-gold:hover{transform:translateY(-2px);box-shadow:0 14px 28px -14px rgba(12,19,34,.6)}
+
+  /* loading gate */
+  #gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--cream);z-index:100;font-family:"Fraunces";font-style:italic;color:var(--ink-soft)}
+
+  main{padding:46px 0 80px}
+  .hello{margin-bottom:34px}
+  .hello h1{font-size:clamp(2rem,5vw,2.9rem);margin:.25em 0 .15em}
+  .hello p{color:var(--ink-soft)}
+
+  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow)}
+  .card h3{font-size:1.25rem;margin-bottom:14px}
+  .kv{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-top:1px solid var(--line)}
+  .kv:first-of-type{border-top:none}
+  .kv span{color:var(--ink-soft)}
+  .kv b{font-weight:600;text-align:right}
+  .pill{display:inline-block;background:var(--mint);color:var(--ink);font-size:.8rem;font-weight:600;padding:.25em .8em;border-radius:999px}
+
+  .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+  .timeline{list-style:none}
+  .timeline li{position:relative;padding:0 0 18px 26px;border-left:2px solid var(--line);margin-left:6px}
+  .timeline li:last-child{border-left-color:transparent}
+  .timeline li::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--gold)}
+  .timeline b{display:block}
+  .timeline span{color:var(--ink-soft);font-size:.9rem}
+  .soon{font-size:.82rem;color:var(--gold);border:1px dashed var(--gold);border-radius:999px;padding:.15em .7em;display:inline-block;margin-top:4px}
+
+  footer{background:var(--ink-deep);color:rgba(246,242,233,.7);text-align:center;padding:26px;font-size:.85rem}
+
+  @media (max-width:820px){ .grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<div id="gate">Loading your portal…</div>
+
+<header>
+  <nav>
+    <a class="brand" href="index.html">
+      <img src="Logo.svg" alt="Philidor Chess Academy logo">
+      <span style="line-height:1.1"><b>Philidor</b><span>Chess Academy</span></span>
+    </a>
+    <button id="signOut" class="btn btn-outline" type="button">Sign out</button>
+  </nav>
+</header>
+
+<main class="wrap" id="app" style="display:none">
+  <div class="hello">
+    <span class="eyebrow">Parent Portal</span>
+    <h1>Hello, <span id="parentName">there</span> 👋</h1>
+    <p>Here's an overview of your child's chess journey at Philidor.</p>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h3>Student details</h3>
+      <div class="kv"><span>Child's name</span><b id="childName">—</b></div>
+      <div class="kv"><span>Level</span><b><span class="pill" id="childLevel">—</span></b></div>
+      <div class="kv"><span>Parent</span><b id="pName">—</b></div>
+      <div class="kv"><span>Email</span><b id="pEmail">—</b></div>
+      <div class="kv"><span>Phone</span><b id="pPhone">—</b></div>
+      <div class="cta-row">
+        <a class="btn btn-gold" href="https://app.chesslang.com/login" target="_blank" rel="noopener">Open ChessLang ↗</a>
+        <a class="btn btn-outline" href="contact.html">Contact coach</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>What's next</h3>
+      <ul class="timeline">
+        <li><b>Class schedule</b><span>Your upcoming sessions will appear here.</span><br><span class="soon">Coming soon</span></li>
+        <li><b>Progress reports</b><span>Coach feedback after each milestone.</span><br><span class="soon">Coming soon</span></li>
+        <li><b>Payments &amp; invoices</b><span>Track fees and receipts.</span><br><span class="soon">Coming soon</span></li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<footer>&copy; <span id="yr"></span> Philidor Chess Academy — Parent Portal</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  const configured = window.SUPABASE_URL && !window.SUPABASE_URL.includes('YOUR-PROJECT');
+  if (!configured){ window.location.href = 'parent-login.html'; }
+
+  const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+  const gate = document.getElementById('gate');
+  const app  = document.getElementById('app');
+
+  function set(id, val){ document.getElementById(id).textContent = (val && val.trim()) ? val : '—'; }
+
+  (async function init(){
+    const { data:{ session } } = await supabase.auth.getSession();
+    if (!session){ window.location.href = 'parent-login.html'; return; }
+
+    const user = session.user;
+    set('pEmail', user.email);
+
+    // pull profile row (RLS ensures it's only this parent's)
+    const { data: profile } = await supabase
+      .from('profiles').select('*').eq('id', user.id).single();
+
+    const p = profile || user.user_metadata || {};
+    const firstName = (p.full_name || '').split(' ')[0] || 'there';
+    set('parentName', firstName);
+    set('pName',  p.full_name);
+    set('pPhone', p.phone);
+    set('childName', p.child_name);
+    set('childLevel', p.child_level || '—');
+
+    gate.style.display = 'none';
+    app.style.display = 'block';
+  })();
+
+  document.getElementById('signOut').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'parent-login.html';
+  });
+</script>
+</body>
+</html>
