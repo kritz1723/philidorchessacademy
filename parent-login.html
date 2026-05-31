@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parent Login | Philidor Chess Academy</title>
+<meta name="description" content="Parent portal for Philidor Chess Academy — sign in or create an account to track your child's chess journey.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15203b; --ink-deep:#0c1322; --ink-soft:#26314d;
+    --cream:#f6f2e9; --cream-2:#efe9dc; --paper:#fbf8f1;
+    --gold:#bf9b54; --gold-bright:#d8b76a;
+    --mint:#bfe7e0; --lav:#d4d6ec; --pink:#e8cfdd;
+    --line:rgba(21,32,59,.14);
+    --shadow:0 24px 60px -28px rgba(12,19,34,.45);
+    --maxw:1180px; --danger:#c0392b; --ok:#2e7d52;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--cream);color:var(--ink);font-family:"Hanken Grotesk",sans-serif;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  h1,h2,h3,h4{font-family:"Fraunces",serif;font-weight:600;line-height:1.06;letter-spacing:-.01em}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  .eyebrow{font-family:"Hanken Grotesk";font-weight:600;font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);display:inline-flex;align-items:center;gap:.6em}
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--gold)}
+
+  /* nav */
+  header{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(246,242,233,.92);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line);transition:box-shadow .3s}
+  header.scrolled{box-shadow:0 12px 30px -18px rgba(12,19,34,.45)}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;max-width:var(--maxw);margin:0 auto}
+  .brand{display:flex;align-items:center;gap:12px;font-family:"Fraunces";font-weight:600;font-size:1.06rem}
+  .brand img{height:42px;width:42px;border-radius:9px;object-fit:cover;box-shadow:0 6px 18px -8px rgba(12,19,34,.5)}
+  .brand span{display:block;font-family:"Hanken Grotesk";font-weight:500;font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-top:1px}
+  .nav-links{display:flex;align-items:center;gap:30px}
+  .nav-links a{font-size:.92rem;font-weight:500;opacity:.82;transition:opacity .2s}
+  .nav-links a:hover{opacity:1}
+  .btn{font-family:"Hanken Grotesk";font-weight:600;font-size:.92rem;padding:.7em 1.4em;border-radius:999px;cursor:pointer;border:none;transition:transform .2s,box-shadow .2s,background .2s,color .2s;display:inline-block}
+  .btn-gold{background:var(--ink);color:var(--cream)}
+  .btn-gold:hover{transform:translateY(-2px);box-shadow:0 14px 28px -14px rgba(12,19,34,.6)}
+  .nav-toggle{display:none;background:none;border:none;cursor:pointer;color:var(--ink)}
+
+  /* auth section */
+  .auth{min-height:100svh;display:flex;align-items:center;justify-content:center;padding:120px 0 70px;
+    background:
+      radial-gradient(120% 90% at 12% 8%, rgba(184,236,223,.55), transparent 55%),
+      radial-gradient(120% 90% at 92% 22%, rgba(231,207,226,.55), transparent 55%),
+      radial-gradient(130% 100% at 78% 100%, rgba(215,199,238,.55), transparent 55%),
+      var(--cream);}
+  .auth-card{width:min(480px,92vw);background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:38px 34px;box-shadow:var(--shadow)}
+  .auth-card h1{font-size:1.9rem;margin:.4em 0 .2em}
+  .auth-sub{color:var(--ink-soft);font-size:.96rem;margin-bottom:24px}
+
+  /* segmented toggle */
+  .seg{display:flex;background:var(--cream-2);border-radius:999px;padding:5px;margin-bottom:26px}
+  .seg button{flex:1;border:none;background:transparent;cursor:pointer;font-family:"Hanken Grotesk";font-weight:600;font-size:.92rem;padding:.7em 1em;border-radius:999px;color:var(--ink-soft);transition:.2s}
+  .seg button.active{background:var(--ink);color:var(--cream);box-shadow:0 8px 20px -12px rgba(12,19,34,.6)}
+
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:.78rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+  .field input,.field select{width:100%;padding:.85em 1em;border:1px solid var(--line);border-radius:12px;background:var(--cream);font-family:"Hanken Grotesk";font-size:1rem;color:var(--ink);transition:border-color .2s,box-shadow .2s}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(191,155,84,.18)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .btn-submit{width:100%;background:var(--ink);color:var(--cream);font-size:1rem;padding:.95em 1em;margin-top:8px}
+  .btn-submit:hover{transform:translateY(-2px);box-shadow:0 14px 28px -14px rgba(12,19,34,.6)}
+  .btn-submit[disabled]{opacity:.6;cursor:not-allowed;transform:none}
+  .muted{font-size:.86rem;color:var(--ink-soft);text-align:center;margin-top:18px}
+  .muted a{color:var(--gold);font-weight:600}
+  .msg{margin-top:16px;padding:.8em 1em;border-radius:12px;font-size:.9rem;display:none}
+  .msg.show{display:block}
+  .msg.err{background:rgba(192,57,43,.1);color:var(--danger);border:1px solid rgba(192,57,43,.25)}
+  .msg.ok{background:rgba(46,125,82,.1);color:var(--ok);border:1px solid rgba(46,125,82,.25)}
+  .hidden{display:none !important}
+  .config-warn{background:rgba(192,57,43,.08);border:1px dashed var(--danger);color:var(--danger);border-radius:12px;padding:.8em 1em;font-size:.84rem;margin-bottom:20px}
+
+  @media (max-width:720px){
+    .nav-links{position:fixed;inset:0 0 0 auto;width:min(320px,82vw);background:var(--ink);color:var(--cream);flex-direction:column;justify-content:center;gap:26px;padding:40px;transform:translateX(100%);transition:transform .35s}
+    .nav-links.open{transform:none}
+    .nav-links a{color:var(--cream);font-size:1.1rem;opacity:1}
+    .nav-toggle{display:block}
+  }
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <nav>
+    <a class="brand" href="index.html">
+      <img src="Logo.svg" alt="Philidor Chess Academy logo">
+      <span style="line-height:1.1"><b>Philidor</b><span>Chess Academy</span></span>
+    </a>
+    <div class="nav-links" id="navlinks">
+      <a href="index.html">Home</a>
+      <a href="about.html">Coach</a>
+      <a href="achievements.html">Achievements</a>
+      <a href="programs.html">Programs</a>
+      <a href="contact.html">Contact</a>
+      <a class="btn btn-gold" href="https://app.chesslang.com/login" target="_blank" rel="noopener">Student Login</a>
+    </div>
+    <button class="nav-toggle" id="navtoggle" aria-label="Menu">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
+    </button>
+  </nav>
+</header>
+
+<section class="auth">
+  <div class="auth-card">
+    <span class="eyebrow">Parent Portal</span>
+    <h1 id="cardTitle">Welcome back</h1>
+    <p class="auth-sub" id="cardSub">Sign in to follow your child's chess journey.</p>
+
+    <div id="configWarn" class="config-warn hidden">
+      ⚠️ The portal isn't connected yet. Add your Supabase keys in <b>js/supabase-config.js</b> (see SETUP-SUPABASE.md).
+    </div>
+
+    <div class="seg" role="tablist">
+      <button id="tabSignin" class="active" type="button">Sign In</button>
+      <button id="tabSignup" type="button">Sign Up</button>
+    </div>
+
+    <!-- SIGN IN -->
+    <form id="signinForm">
+      <div class="field">
+        <label for="si-email">Email</label>
+        <input id="si-email" type="email" autocomplete="email" required placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label for="si-pass">Password</label>
+        <input id="si-pass" type="password" autocomplete="current-password" required placeholder="••••••••">
+      </div>
+      <button class="btn btn-submit" type="submit">Sign In</button>
+    </form>
+
+    <!-- SIGN UP -->
+    <form id="signupForm" class="hidden">
+      <div class="field">
+        <label for="su-name">Parent full name</label>
+        <input id="su-name" type="text" autocomplete="name" required placeholder="Jane Doe">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="su-child">Child's name</label>
+          <input id="su-child" type="text" required placeholder="Alex">
+        </div>
+        <div class="field">
+          <label for="su-level">Child's level</label>
+          <select id="su-level" required>
+            <option value="">Select…</option>
+            <option>Beginner</option>
+            <option>Intermediate</option>
+            <option>Advanced</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="su-phone">Phone (optional)</label>
+        <input id="su-phone" type="tel" autocomplete="tel" placeholder="+91 …">
+      </div>
+      <div class="field">
+        <label for="su-email">Email</label>
+        <input id="su-email" type="email" autocomplete="email" required placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label for="su-pass">Password (min 8 characters)</label>
+        <input id="su-pass" type="password" autocomplete="new-password" minlength="8" required placeholder="••••••••">
+      </div>
+      <button class="btn btn-submit" type="submit">Create Account</button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+    <p class="muted" id="footNote"></p>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script>
+  // ---- nav behaviour ----
+  const hdr = document.getElementById('hdr');
+  const onScroll = () => hdr.classList.toggle('scrolled', window.scrollY > 20);
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+  const navToggle = document.getElementById('navtoggle');
+  const navLinks = document.getElementById('navlinks');
+  navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+
+  // ---- elements ----
+  const tabSignin = document.getElementById('tabSignin');
+  const tabSignup = document.getElementById('tabSignup');
+  const signinForm = document.getElementById('signinForm');
+  const signupForm = document.getElementById('signupForm');
+  const cardTitle = document.getElementById('cardTitle');
+  const cardSub  = document.getElementById('cardSub');
+  const msg = document.getElementById('msg');
+  const footNote = document.getElementById('footNote');
+
+  function showMsg(text, kind){ msg.textContent = text; msg.className = 'msg show ' + kind; }
+  function clearMsg(){ msg.className = 'msg'; }
+
+  function setMode(mode){
+    const signup = mode === 'signup';
+    tabSignup.classList.toggle('active', signup);
+    tabSignin.classList.toggle('active', !signup);
+    signupForm.classList.toggle('hidden', !signup);
+    signinForm.classList.toggle('hidden', signup);
+    cardTitle.textContent = signup ? 'Create your account' : 'Welcome back';
+    cardSub.textContent = signup
+      ? 'Set up a parent account to follow your child’s progress.'
+      : 'Sign in to follow your child’s chess journey.';
+    footNote.innerHTML = signup
+      ? 'Already have an account? <a href="#" id="switchLink">Sign in</a>'
+      : 'New here? <a href="#" id="switchLink">Create an account</a>';
+    document.getElementById('switchLink')
+      .addEventListener('click', e => { e.preventDefault(); setMode(signup ? 'signin' : 'signup'); });
+    clearMsg();
+  }
+  tabSignin.addEventListener('click', () => setMode('signin'));
+  tabSignup.addEventListener('click', () => setMode('signup'));
+  setMode('signin');
+
+  // ---- Supabase init ----
+  const configured = window.SUPABASE_URL && !window.SUPABASE_URL.includes('YOUR-PROJECT');
+  let supabase = null;
+  if (configured){
+    supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    // already logged in? go to dashboard
+    supabase.auth.getSession().then(({data}) => {
+      if (data.session) window.location.href = 'parent-dashboard.html';
+    });
+  } else {
+    document.getElementById('configWarn').classList.remove('hidden');
+  }
+
+  function guard(){
+    if (!supabase){ showMsg('Portal not connected yet — add your Supabase keys first.', 'err'); return false; }
+    return true;
+  }
+
+  // ---- sign in ----
+  signinForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!guard()) return;
+    const btn = signinForm.querySelector('button'); btn.disabled = true; clearMsg();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: document.getElementById('si-email').value.trim(),
+      password: document.getElementById('si-pass').value
+    });
+    btn.disabled = false;
+    if (error){ showMsg(error.message, 'err'); return; }
+    window.location.href = 'parent-dashboard.html';
+  });
+
+  // ---- sign up ----
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!guard()) return;
+    const btn = signupForm.querySelector('button'); btn.disabled = true; clearMsg();
+    const { data, error } = await supabase.auth.signUp({
+      email: document.getElementById('su-email').value.trim(),
+      password: document.getElementById('su-pass').value,
+      options: { data: {
+        full_name:   document.getElementById('su-name').value.trim(),
+        phone:       document.getElementById('su-phone').value.trim(),
+        child_name:  document.getElementById('su-child').value.trim(),
+        child_level: document.getElementById('su-level').value
+      } }
+    });
+    btn.disabled = false;
+    if (error){ showMsg(error.message, 'err'); return; }
+    if (data.session){
+      window.location.href = 'parent-dashboard.html';   // email confirmation OFF
+    } else {
+      showMsg('Account created! Check your email to confirm, then sign in.', 'ok');
+      setTimeout(() => setMode('signin'), 1500);
+    }
+  });
+</script>
+</body>
+</html>
