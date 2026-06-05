@@ -130,6 +130,16 @@
           <div id="noSel" class="form"><p style="color:var(--ink-soft)">← Select a child to edit stats, or <b>+ Add</b> a child and assign to a parent.</p></div>
           <form id="form" class="form hidden">
             <h2 id="editingFor" style="font-size:1.2rem"></h2>
+            <div class="grp">ChessLang link</div>
+            <div class="fields">
+              <div class="f full"><label>ChessLang student ID (the UUID in the report URL)</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="chesslang_id" placeholder="e.g. 1c75f99a-524a-4569-9618-9866d13ef8e2" style="flex:1">
+                  <button class="btn btn-ghost btn-xs" type="button" id="saveChesslang">Save link</button>
+                  <span class="msg" id="clMsg"></span>
+                </div>
+              </div>
+            </div>
             <div class="grp">Classroom</div>
             <div class="fields">
               <div class="f"><label>Attendance %</label><input type="number" id="attendance_pct" min="0" max="100"></div>
@@ -419,7 +429,7 @@
     }
 
     function loadChildren(){
-      client.from('children').select('id,parent_id,name,level').order('name').then(function(r){
+      client.from('children').select('id,parent_id,name,level,chesslang_id').order('name').then(function(r){
         CHILDREN = r.data || [];
         var list = byId('clist'); list.innerHTML='';
         if (!CHILDREN.length){ list.innerHTML='<li style="cursor:default"><span>No children yet. Click + Add.</span></li>'; }
@@ -439,11 +449,23 @@
       li.classList.add('active');
       byId('noSel').classList.add('hidden'); byId('form').classList.remove('hidden');
       byId('editingFor').textContent='Editing: '+c.name; byId('msg').textContent='';
+      byId('clMsg').textContent=''; byId('clMsg').className='msg';
+      byId('chesslang_id').value = c.chesslang_id || '';
       ALL.forEach(function(k){ byId(k).value=''; });
       client.from('student_stats').select('*').eq('child_id', c.id).maybeSingle().then(function(r){
         var s=r.data; if (s) ALL.forEach(function(k){ if (s[k]!==null&&s[k]!==undefined) byId(k).value=s[k]; });
       });
     }
+
+    byId('saveChesslang').addEventListener('click', function(){
+      if (!selectedChild) return;
+      var msg=byId('clMsg'); msg.className='msg'; msg.textContent='Saving…';
+      var val = byId('chesslang_id').value.trim() || null;
+      client.from('children').update({ chesslang_id: val }).eq('id', selectedChild.id).then(function(r){
+        if (r.error){ msg.textContent='Error: '+r.error.message; msg.className='msg err'; return; }
+        selectedChild.chesslang_id = val; msg.textContent='✓ Linked'; msg.className='msg ok';
+      });
+    });
 
     byId('form').addEventListener('submit', function(e){
       e.preventDefault(); if (!selectedChild) return;
