@@ -114,7 +114,7 @@
   <div id="admin" class="hidden">
     <div class="tabs">
       <button data-tab="stats" class="active">Student Stats</button>
-      <button data-tab="session">Session Material</button>
+      <button data-tab="topics">Topics</button>
       <button data-tab="open">Open Reference Materials</button>
       <button data-tab="products">Products</button>
     </div>
@@ -168,33 +168,56 @@
       </div>
     </div>
 
-    <!-- ================= SESSION MATERIAL ================= -->
-    <div id="tab-session" class="tabpane">
+    <!-- ================= TOPICS ================= -->
+    <div id="tab-topics" class="tabpane">
       <div class="layout">
+
+        <!-- Panel A: create + list topics -->
         <section class="panel addcard">
-          <h2>Add session material</h2>
-          <form id="smForm">
-            <div class="f" style="margin-bottom:12px"><label>Title</label><input id="sm_title" type="text" required placeholder="e.g. Knight forks worksheet"></div>
+          <h2>Create a topic</h2>
+          <form id="topicForm">
             <div class="grid2">
-              <div class="f"><label>Session label (optional)</label><input id="sm_session" type="text" placeholder="Session 4"></div>
-              <div class="f"><label>Pick a material page</label>
-                <select id="sm_pick"><option value="">— Select from list —</option><option value="__custom__">Other (type a link)…</option></select></div>
+              <div class="f"><label>Topic name</label><input id="tp_name" type="text" required placeholder="e.g. Knight Tactics"></div>
+              <div class="f"><label>Description (optional)</label><input id="tp_desc" type="text" placeholder="Short summary"></div>
             </div>
-            <div class="f" id="sm_url_wrap" style="margin:12px 0;display:none"><label>Custom link / page URL</label><input id="sm_url" type="text" placeholder="materials/session4.html or https://…"></div>
-            <div class="f" style="margin:12px 0"><label>…or upload a file (PDF, HTML, image)</label><input id="sm_file" type="file" accept=".pdf,.html,.htm,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx"></div>
-            <div class="f" style="margin:12px 0"><label>Description (optional)</label><textarea id="sm_desc" rows="2"></textarea></div>
-            <div class="grid2">
-              <div class="f"><label>Assign to</label>
-                <select id="sm_target_type"><option value="parent">A parent (all their kids)</option><option value="child">A specific child</option></select></div>
-              <div class="f"><label>Choose</label><select id="sm_target"></select></div>
-            </div>
-            <div class="bar"><button class="btn btn-gold" type="submit">Add material</button><span class="msg" id="smMsg"></span></div>
+            <div class="bar"><button class="btn btn-gold" type="submit">Create topic</button><span class="msg" id="tpMsg"></span></div>
           </form>
         </section>
+
         <aside class="panel">
-          <div class="phead"><h2>Assigned material</h2><button class="btn btn-ghost btn-xs" id="smRefresh" type="button">Refresh</button></div>
-          <div id="smList"></div>
+          <div class="phead"><h2>Topics</h2><button class="btn btn-ghost btn-xs" id="topicRefresh" type="button">Refresh</button></div>
+          <div id="topicList"></div>
         </aside>
+
+        <!-- Panel B: manage selected topic's materials -->
+        <section class="panel addcard hidden" id="topicManage">
+          <h2>Materials in “<span id="tpCurrentName"></span>”</h2>
+          <form id="tmForm">
+            <div class="f" style="margin-bottom:12px"><label>Title</label><input id="tm_title" type="text" required placeholder="e.g. Knight forks worksheet"></div>
+            <div class="grid2">
+              <div class="f"><label>Pick a material page</label>
+                <select id="tm_pick"><option value="">— Select from list —</option><option value="__custom__">Other (type a link)…</option></select></div>
+              <div class="f" id="tm_url_wrap" style="display:none"><label>Custom link / page URL</label><input id="tm_url" type="text" placeholder="materials/session4.html or https://…"></div>
+            </div>
+            <div class="f" style="margin:12px 0"><label>…or upload a file (PDF, HTML, image)</label><input id="tm_file" type="file" accept=".pdf,.html,.htm,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx"></div>
+            <div class="f" style="margin-bottom:12px"><label>Description (optional)</label><textarea id="tm_desc" rows="2"></textarea></div>
+            <div class="bar"><button class="btn btn-gold" type="submit">Add material</button><span class="msg" id="tmMsg"></span></div>
+          </form>
+          <div style="border-top:1px solid var(--line);margin-top:8px"><div id="topicMaterialList"></div></div>
+        </section>
+
+        <!-- Panel C: assignments for selected topic -->
+        <section class="panel addcard hidden" id="topicAssign">
+          <h2>Who can see “<span id="tpAssignName"></span>”?</h2>
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-weight:600">
+            <input type="checkbox" id="tp_assign_all"> Assign to all parents
+          </label>
+          <div class="grid2">
+            <div class="f"><label>Parents</label><div id="tp_parents" style="max-height:200px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--cream)"></div></div>
+            <div class="f"><label>Children</label><div id="tp_children" style="max-height:200px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--cream)"></div></div>
+          </div>
+          <div class="bar"><button class="btn btn-gold" type="button" id="tpAssignSave">Save assignments</button><span class="msg" id="tpAssignMsg"></span></div>
+        </section>
       </div>
     </div>
 
@@ -312,19 +335,18 @@
     var PARENTS = {}, CHILDREN = [];
 
     function init(){
-      loadMaterialList();
+      loadMaterialList('tm_pick');
       loadParents(function(){
         loadChildren();
-        fillSessionTargets();
-        loadSessionMaterials();
+        loadTopics();
         loadOpen();
         loadProducts();
       });
     }
 
-    // Populate the "Pick a material page" dropdown from materials/manifest.json
-    function loadMaterialList(){
-      var pick = byId('sm_pick');
+    // Populate a "Pick a material page" dropdown from materials/manifest.json
+    function loadMaterialList(selectId){
+      var pick = byId(selectId);
       fetch('materials/manifest.json', { cache:'no-store' }).then(function(res){ return res.json(); }).then(function(data){
         var items = (data && data.materials) || [];
         items.forEach(function(m){
@@ -334,19 +356,18 @@
         });
       }).catch(function(){ /* manifest missing — custom + upload still work */ });
     }
-    byId('sm_pick').addEventListener('change', function(){
-      byId('sm_url_wrap').style.display = (this.value==='__custom__') ? 'block' : 'none';
-      // auto-fill title from the picked page if title is empty
-      var t = byId('sm_title');
+    byId('tm_pick').addEventListener('change', function(){
+      byId('tm_url_wrap').style.display = (this.value==='__custom__') ? 'block' : 'none';
+      var t = byId('tm_title');
       if (this.value && this.value!=='__custom__' && !t.value.trim()){
         var opt=this.options[this.selectedIndex]; t.value = opt ? opt.textContent : '';
       }
     });
     // chosen material URL: picked value, or the custom field
     function pickedUrl(){
-      var p = byId('sm_pick').value;
+      var p = byId('tm_pick').value;
       if (p && p!=='__custom__') return p;
-      return byId('sm_url').value.trim();
+      return byId('tm_url').value.trim();
     }
 
     // ============ STATS ============
@@ -381,7 +402,6 @@
           li.addEventListener('click', function(){ selectChild(c, li); });
           list.appendChild(li);
         });
-        fillSessionTargets();
       });
     }
 
@@ -427,60 +447,157 @@
       });
     });
 
-    // ============ SESSION MATERIAL ============
-    byId('sm_target_type').addEventListener('change', fillSessionTargets);
-    function fillSessionTargets(){
-      var type = byId('sm_target_type').value, sel = byId('sm_target'); sel.innerHTML='';
-      if (type==='parent'){
-        Object.keys(PARENTS).forEach(function(id){ var o=document.createElement('option'); o.value=id; o.textContent=PARENTS[id].full_name||'(no name)'; sel.appendChild(o); });
-      } else {
-        CHILDREN.forEach(function(c){ var par=PARENTS[c.parent_id]; var o=document.createElement('option'); o.value=c.id; o.textContent=c.name+(par?' ('+(par.full_name||'')+')':''); sel.appendChild(o); });
-      }
-    }
-    byId('smForm').addEventListener('submit', function(e){
+    // ============ TOPICS ============
+    var CURRENT_TOPIC = null;
+
+    // -- create topic --
+    byId('topicForm').addEventListener('submit', function(e){
       e.preventDefault();
-      var msg=byId('smMsg'); msg.className='msg';
+      var msg=byId('tpMsg'); msg.className='msg';
+      var name=byId('tp_name').value.trim();
+      if (!name){ msg.textContent='Topic name is required.'; msg.classList.add('err'); return; }
+      var btn=byId('topicForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent='Saving…';
+      client.from('topics').insert({ name:name, description:byId('tp_desc').value.trim()||null }).select().single().then(function(r){
+        btn.disabled=false;
+        if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
+        msg.textContent='✓ Created'; msg.className='msg ok'; byId('topicForm').reset();
+        loadTopics(function(){ selectTopic(r.data); });
+      });
+    });
+    byId('topicRefresh').addEventListener('click', function(){ loadTopics(); });
+
+    function loadTopics(then){
+      client.from('topics').select('*').order('sort_order').order('created_at').then(function(r){
+        var box=byId('topicList'); box.innerHTML=''; var rows=r.data||[];
+        if (!rows.length){ box.innerHTML='<div class="empty">No topics yet. Create one above.</div>'; }
+        rows.forEach(function(t){
+          var d=document.createElement('div'); d.className='itemrow'+(CURRENT_TOPIC&&CURRENT_TOPIC.id===t.id?' active':'');
+          d.innerHTML='<div class="info"><b>'+esc(t.name)+(t.assign_all?' <span class="pill">All parents</span>':'')+'</b>'+
+            (t.description?'<span>'+esc(t.description)+'</span>':'')+'</div>'+
+            '<div style="display:flex;gap:6px"><button class="btn btn-ghost btn-xs manage" type="button">Manage</button>'+
+            '<button class="btn btn-danger btn-xs del" type="button">Delete</button></div>';
+          d.querySelector('.manage').addEventListener('click', function(){ selectTopic(t); });
+          d.querySelector('.del').addEventListener('click', function(){ deleteTopic(t); });
+          box.appendChild(d);
+        });
+        if (then) then();
+      });
+    }
+
+    function selectTopic(t){
+      CURRENT_TOPIC=t;
+      byId('topicManage').classList.remove('hidden');
+      byId('topicAssign').classList.remove('hidden');
+      byId('tpCurrentName').textContent=t.name;
+      byId('tpAssignName').textContent=t.name;
+      byId('tmMsg').textContent=''; byId('tpAssignMsg').textContent='';
+      Array.prototype.forEach.call(document.querySelectorAll('#topicList .itemrow'), function(x){ x.classList.remove('active'); });
+      loadTopicMaterials();
+      loadTopicAssignments();
+    }
+
+    function deleteTopic(t){
+      if (!window.confirm('Delete topic “'+t.name+'” and all its materials/assignments?')) return;
+      // remove uploaded files first, then the topic (cascade clears rows)
+      client.from('topic_materials').select('storage_path').eq('topic_id', t.id).then(function(r){
+        var paths=(r.data||[]).map(function(m){ return m.storage_path; }).filter(Boolean);
+        if (paths.length) client.storage.from('materials').remove(paths);
+        client.from('topics').delete().eq('id', t.id).then(function(){
+          if (CURRENT_TOPIC && CURRENT_TOPIC.id===t.id){ CURRENT_TOPIC=null; byId('topicManage').classList.add('hidden'); byId('topicAssign').classList.add('hidden'); }
+          loadTopics();
+        });
+      });
+    }
+
+    // -- materials in a topic --
+    byId('tmForm').addEventListener('submit', function(e){
+      e.preventDefault(); if (!CURRENT_TOPIC) return;
+      var msg=byId('tmMsg'); msg.className='msg';
       var typedUrl=pickedUrl();
-      var hasFile = byId('sm_file').files && byId('sm_file').files[0];
+      var hasFile = byId('tm_file').files && byId('tm_file').files[0];
       if (!typedUrl && !hasFile){ msg.textContent='Pick a material, paste a link, OR upload a file.'; msg.classList.add('err'); return; }
       if (typedUrl && !safeUrl(typedUrl)){ msg.textContent='Link must be http(s) or a .html page path.'; msg.classList.add('err'); return; }
-      var type=byId('sm_target_type').value, target=byId('sm_target').value;
-      if (!target){ msg.textContent='Choose a '+type+'.'; msg.classList.add('err'); return; }
-      var btn=byId('smForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent= hasFile?'Uploading…':'Saving…';
-      uploadFile(byId('sm_file'), 'session').then(function(up){
-        var row={ title:byId('sm_title').value.trim(), description:byId('sm_desc').value.trim()||null,
-          url: up ? null : safeUrl(typedUrl), storage_path: up ? up.path : null,
-          session_no:byId('sm_session').value.trim()||null,
-          parent_id: type==='parent'?target:null, child_id: type==='child'?target:null };
-        return client.from('session_materials').insert(row);
+      var btn=byId('tmForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent= hasFile?'Uploading…':'Saving…';
+      uploadFile(byId('tm_file'), 'topics').then(function(up){
+        var row={ topic_id:CURRENT_TOPIC.id, title:byId('tm_title').value.trim(), description:byId('tm_desc').value.trim()||null,
+          url: up ? null : safeUrl(typedUrl), storage_path: up ? up.path : null };
+        return client.from('topic_materials').insert(row);
       }).then(function(r){
         btn.disabled=false;
         if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
-        msg.textContent='✓ Added'; msg.className='msg ok'; byId('smForm').reset(); byId('sm_url_wrap').style.display='none'; fillSessionTargets(); loadSessionMaterials();
+        msg.textContent='✓ Added'; msg.className='msg ok'; byId('tmForm').reset(); byId('tm_url_wrap').style.display='none'; loadTopicMaterials();
       }).catch(function(err){ btn.disabled=false; msg.textContent='Upload failed: '+(err.message||err); msg.classList.add('err'); });
     });
-    byId('smRefresh').addEventListener('click', loadSessionMaterials);
-    function loadSessionMaterials(){
-      client.from('session_materials').select('*').order('created_at',{ascending:false}).then(function(r){
-        var box=byId('smList'); box.innerHTML='';
-        var rows=r.data||[];
-        if (!rows.length){ box.innerHTML='<div class="empty">No session material yet.</div>'; return; }
+
+    function loadTopicMaterials(){
+      if (!CURRENT_TOPIC) return;
+      client.from('topic_materials').select('*').eq('topic_id', CURRENT_TOPIC.id).order('sort_order').order('created_at').then(function(r){
+        var box=byId('topicMaterialList'); box.innerHTML=''; var rows=r.data||[];
+        if (!rows.length){ box.innerHTML='<div class="empty">No materials in this topic yet.</div>'; return; }
         rows.forEach(function(m){
-          var who = m.parent_id ? ('Parent: '+esc((PARENTS[m.parent_id]||{}).full_name||'—'))
-                  : ('Child: '+esc((childName(m.child_id))||'—'));
           var d=document.createElement('div'); d.className='itemrow';
           var link = m.storage_path ? '<a href="#" data-path="'+esc(m.storage_path)+'" class="signed">open file ↗</a>'
                                     : '<a href="'+esc(m.url)+'" target="_blank" rel="noopener">open ↗</a>';
-          d.innerHTML='<div class="info"><b>'+(m.session_no?'<span class="pill">'+esc(m.session_no)+'</span>':'')+esc(m.title)+'</b>'+
-            '<span>'+who+' · '+link+'</span></div>'+
+          d.innerHTML='<div class="info"><b>'+esc(m.title)+'</b><span>'+link+'</span></div>'+
             '<button class="btn btn-danger btn-xs" type="button">Delete</button>';
           var sg=d.querySelector('a.signed'); if (sg) sg.addEventListener('click', signedOpen);
-          d.querySelector('button').addEventListener('click', function(){ delRow('session_materials', m.id, loadSessionMaterials, m.storage_path); });
+          d.querySelector('button').addEventListener('click', function(){ delRow('topic_materials', m.id, loadTopicMaterials, m.storage_path); });
           box.appendChild(d);
         });
       });
     }
-    function childName(id){ for (var i=0;i<CHILDREN.length;i++){ if (CHILDREN[i].id===id) return CHILDREN[i].name; } return null; }
+
+    // -- assignments (editable) --
+    function loadTopicAssignments(){
+      if (!CURRENT_TOPIC) return;
+      byId('tp_assign_all').checked = !!CURRENT_TOPIC.assign_all;
+      // build checkbox lists fresh
+      var pbox=byId('tp_parents'); pbox.innerHTML='';
+      Object.keys(PARENTS).forEach(function(id){
+        var l=document.createElement('label'); l.style.cssText='display:flex;align-items:center;gap:8px;padding:3px 0;font-weight:500';
+        l.innerHTML='<input type="checkbox" class="pchk" value="'+id+'"> '+esc(PARENTS[id].full_name||'(no name)');
+        pbox.appendChild(l);
+      });
+      var cbox=byId('tp_children'); cbox.innerHTML='';
+      CHILDREN.forEach(function(c){ var par=PARENTS[c.parent_id];
+        var l=document.createElement('label'); l.style.cssText='display:flex;align-items:center;gap:8px;padding:3px 0;font-weight:500';
+        l.innerHTML='<input type="checkbox" class="cchk" value="'+c.id+'"> '+esc(c.name)+(par?' <span style="color:var(--ink-soft)">('+esc(par.full_name||'')+')</span>':'');
+        cbox.appendChild(l);
+      });
+      // check existing
+      client.from('topic_assignments').select('parent_id,child_id').eq('topic_id', CURRENT_TOPIC.id).then(function(r){
+        (r.data||[]).forEach(function(a){
+          if (a.parent_id){ var pe=byId('tp_parents').querySelector('.pchk[value="'+a.parent_id+'"]'); if (pe) pe.checked=true; }
+          if (a.child_id){ var ce=byId('tp_children').querySelector('.cchk[value="'+a.child_id+'"]'); if (ce) ce.checked=true; }
+        });
+      });
+    }
+
+    byId('tpAssignSave').addEventListener('click', function(){
+      if (!CURRENT_TOPIC) return;
+      var msg=byId('tpAssignMsg'); msg.className='msg'; msg.textContent='Saving…';
+      var assignAll = byId('tp_assign_all').checked;
+      var parents = Array.prototype.map.call(document.querySelectorAll('#tp_parents .pchk:checked'), function(x){ return x.value; });
+      var kids    = Array.prototype.map.call(document.querySelectorAll('#tp_children .cchk:checked'), function(x){ return x.value; });
+      // 1) update assign_all on the topic
+      client.from('topics').update({ assign_all:assignAll }).eq('id', CURRENT_TOPIC.id).then(function(u){
+        if (u.error){ msg.textContent='Error: '+u.error.message; msg.classList.add('err'); return; }
+        CURRENT_TOPIC.assign_all=assignAll;
+        // 2) reconcile: delete all, then insert the current selection
+        client.from('topic_assignments').delete().eq('topic_id', CURRENT_TOPIC.id).then(function(d){
+          if (d.error){ msg.textContent='Error: '+d.error.message; msg.classList.add('err'); return; }
+          var rows=[];
+          parents.forEach(function(pid){ rows.push({ topic_id:CURRENT_TOPIC.id, parent_id:pid, child_id:null }); });
+          kids.forEach(function(cid){ rows.push({ topic_id:CURRENT_TOPIC.id, parent_id:null, child_id:cid }); });
+          var done=function(err){
+            if (err){ msg.textContent='Error: '+(err.message||err); msg.classList.add('err'); return; }
+            msg.textContent='✓ Saved'; msg.className='msg ok'; loadTopics();
+          };
+          if (!rows.length) return done(null);
+          client.from('topic_assignments').insert(rows).then(function(i){ done(i.error); });
+        });
+      });
+    });
 
     // ============ OPEN MATERIALS ============
     byId('omForm').addEventListener('submit', function(e){
