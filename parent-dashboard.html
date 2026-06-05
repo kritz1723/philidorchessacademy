@@ -10,62 +10,89 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#15203b; --ink-deep:#0c1322; --ink-soft:#26314d;
-    --cream:#f6f2e9; --cream-2:#efe9dc; --paper:#fbf8f1;
+    --ink:#15203b; --ink-deep:#0c1322; --ink-soft:#5a6478;
+    --cream:#f6f2e9; --cream-2:#e9e4d8; --paper:#ffffff; --bg:#f4f1ea;
     --gold:#bf9b54; --gold-bright:#d8b76a;
     --mint:#bfe7e0; --lav:#d4d6ec; --pink:#e8cfdd;
     --green:#2e9e6b; --red:#d05a57; --blue:#5b8def;
-    --line:rgba(21,32,59,.12);
-    --shadow:0 24px 60px -30px rgba(12,19,34,.45);
-    --maxw:1100px;
+    --line:rgba(21,32,59,.09);
+    --soft:0 1px 2px rgba(12,19,34,.04), 0 16px 36px -26px rgba(12,19,34,.30);
+    --maxw:1080px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--cream);color:var(--ink);font-family:"Hanken Grotesk",sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
-  h1,h2,h3,h4{font-family:"Fraunces",serif;font-weight:600;line-height:1.08;letter-spacing:-.01em}
+  body{background:var(--bg);color:var(--ink);font-family:"Hanken Grotesk",sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:"Fraunces",serif;font-weight:600;line-height:1.1;letter-spacing:-.01em}
   a{color:inherit;text-decoration:none}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
   .eyebrow{font-family:"Hanken Grotesk";font-weight:600;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
 
-  header{position:sticky;top:0;z-index:50;background:rgba(21,32,59,.95);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)}
-  nav{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;max-width:var(--maxw);margin:0 auto}
+  /* ---------- header ---------- */
+  header{position:sticky;top:0;z-index:50;background:rgba(21,32,59,.96);backdrop-filter:blur(12px);box-shadow:0 1px 0 rgba(12,19,34,.25)}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;max-width:var(--maxw);margin:0 auto}
   .brand{display:flex;align-items:center;gap:11px;font-family:"Fraunces";font-weight:600;font-size:1.02rem}
-  .brand img{height:38px;width:38px;border-radius:9px;object-fit:cover;box-shadow:0 6px 18px -8px rgba(12,19,34,.5)}
+  .brand img{height:38px;width:38px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px -8px rgba(12,19,34,.5)}
   .brand small{display:block;font-family:"Hanken Grotesk";font-weight:500;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
-  .btn{font-family:"Hanken Grotesk";font-weight:600;font-size:.88rem;padding:.55em 1.2em;border-radius:999px;cursor:pointer;border:none;transition:.2s;display:inline-block}
+  .btn{font-family:"Hanken Grotesk";font-weight:600;font-size:.86rem;padding:.55em 1.15em;border-radius:999px;cursor:pointer;border:none;transition:.18s;display:inline-block}
   .btn-outline{background:transparent;border:1.5px solid var(--ink);color:var(--ink)}
   .btn-outline:hover{background:var(--ink);color:var(--cream)}
   .btn-gold{background:var(--ink);color:var(--cream)}
-  .btn-gold:hover{transform:translateY(-2px);box-shadow:0 14px 28px -14px rgba(12,19,34,.6)}
+  .btn-gold:hover{transform:translateY(-1px)}
   .btn-sm{font-size:.8rem;padding:.45em 1em}
+  header .brand b{color:var(--cream)}
+  header .brand small{color:var(--gold)}
+  header .btn-gold{background:var(--gold);color:var(--ink)}
+  header .btn-gold:hover{background:var(--gold-bright);transform:none}
+  header .btn-outline{border-color:rgba(246,242,233,.5);color:var(--cream)}
+  header .btn-outline:hover{background:rgba(246,242,233,.14);color:var(--cream)}
 
-  #gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--cream);z-index:100;font-family:"Fraunces";font-style:italic;color:var(--ink-soft)}
+  #gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:100;font-family:"Fraunces";font-style:italic;color:var(--ink-soft)}
 
-  main{padding:28px 0 70px}
-  .hello{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:18px}
-  .hello h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:.2em 0 .1em}
-  .hello p{color:var(--ink-soft)}
-  .updated{font-size:.78rem;color:var(--ink-soft)}
+  main{padding:0 0 80px}
 
-  /* child selector tabs */
-  .kidbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:6px 0 24px}
-  .kidtab{display:inline-flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:.5em 1.1em;cursor:pointer;font-weight:600;font-size:.9rem;transition:.18s;box-shadow:var(--shadow)}
-  .kidtab:hover{transform:translateY(-1px)}
+  /* ---------- hero ---------- */
+  .hero{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:34px 0 20px}
+  .hero h1{font-size:clamp(1.8rem,4.4vw,2.6rem);margin:.16em 0 .14em}
+  .hero .sub{color:var(--ink-soft)}
+  .updated{font-size:.78rem;color:var(--ink-soft);background:#fff;border:1px solid var(--line);padding:.4em .9em;border-radius:999px}
+
+  /* ---------- child selector ---------- */
+  .kidbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:4px 0 22px}
+  .kidtab{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:.5em 1.05em;cursor:pointer;font-weight:600;font-size:.9rem;transition:.16s;color:var(--ink)}
+  .kidtab:hover{border-color:rgba(21,32,59,.25)}
   .kidtab.active{background:var(--ink);color:var(--cream);border-color:var(--ink)}
-  .kidtab .lvl{font-size:.72rem;font-weight:500;opacity:.7}
+  .kidtab .lvl{font-size:.72rem;font-weight:500;opacity:.65}
   .kidtab.active .lvl{opacity:.85}
-  .addkid{border:1.5px dashed var(--gold);color:var(--gold);background:transparent;border-radius:999px;padding:.5em 1.1em;cursor:pointer;font-weight:600;font-size:.9rem}
+  .addkid{border:1.4px dashed rgba(191,155,84,.7);color:var(--gold);background:transparent;border-radius:999px;padding:.5em 1.05em;cursor:pointer;font-weight:600;font-size:.9rem;transition:.16s}
+  .addkid:hover{background:rgba(191,155,84,.08)}
 
-  .chip{display:inline-flex;align-items:center;gap:7px;background:var(--mint);color:var(--ink);font-size:.82rem;font-weight:600;padding:.35em .9em;border-radius:999px}
+  /* ---------- premium segmented nav ---------- */
+  .viewnav{display:inline-flex;gap:4px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px;margin:2px 0 28px;box-shadow:var(--soft);max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .viewnav::-webkit-scrollbar{display:none}
+  .viewnav button{border:none;background:transparent;font-family:inherit;font-weight:600;font-size:.9rem;color:var(--ink-soft);padding:.62em 1.3em;border-radius:999px;cursor:pointer;white-space:nowrap;transition:.18s;letter-spacing:.01em}
+  .viewnav button:hover{color:var(--ink)}
+  .viewnav button.active{background:var(--ink);color:var(--cream)}
 
-  .section-title{display:flex;align-items:center;gap:10px;margin:30px 0 14px}
-  .section-title h2{font-size:1.25rem}
-  .section-title .ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;background:var(--paper);box-shadow:var(--shadow)}
+  .view{animation:fade .34s ease}
+  .view[hidden]{display:none}
+  @keyframes fade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 
-  .cards{display:grid;gap:18px}
+  .panel-head{margin:0 0 18px}
+  .panel-head h2{font-size:1.45rem}
+  .panel-head p{color:var(--ink-soft);margin-top:3px}
+
+  /* ---------- section headings ---------- */
+  .section-title{display:flex;align-items:center;gap:11px;margin:26px 0 14px}
+  .section-title:first-child{margin-top:4px}
+  .section-title h2{font-size:1.12rem}
+  .section-title .ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.02rem;background:#fff;border:1px solid var(--line)}
+
+  /* ---------- cards ---------- */
+  .cards{display:grid;gap:16px}
   .row-4{grid-template-columns:repeat(4,1fr)}
-  .row-2{grid-template-columns:1.2fr .8fr}
-  .card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
-  .stat .label{font-size:.82rem;color:var(--ink-soft);margin-bottom:6px}
+  .row-2{grid-template-columns:1.15fr .85fr}
+  .grid3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--soft)}
+  .stat .label{font-size:.8rem;color:var(--ink-soft);margin-bottom:6px}
   .stat .num{font-family:"Fraunces";font-size:2rem;line-height:1}
   .stat .num small{font-size:1rem;color:var(--ink-soft)}
 
@@ -88,40 +115,39 @@
   .notes{white-space:pre-wrap;color:var(--ink-soft)}
   .empty{color:var(--ink-soft);font-style:italic}
 
-  /* material / product cards */
+  /* ---------- material / product cards ---------- */
   .mat{display:flex;flex-direction:column;gap:8px}
-  .mat .pill{display:inline-block;align-self:flex-start;font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--mint);color:var(--ink);border-radius:999px;padding:.2em .7em}
+  .mat .pill{display:inline-block;align-self:flex-start;font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--mint);color:var(--ink);border-radius:999px;padding:.25em .75em}
   .mat h4{font-size:1.05rem}
   .mat p{font-size:.86rem;color:var(--ink-soft)}
-  .mat a.open{margin-top:auto;align-self:flex-start;font-weight:600;color:var(--gold)}
+  .mat a.open{margin-top:auto;align-self:flex-start;font-weight:600;color:var(--gold);transition:.15s}
+  .mat a.open:hover{color:var(--gold-bright);gap:6px}
   .prod img{width:100%;height:130px;object-fit:cover;border-radius:12px;background:var(--cream-2);margin-bottom:10px}
   .prod .price{font-family:"Fraunces";font-weight:600}
 
-  /* modal */
+  /* empty-state card */
+  .empty-card{text-align:center;padding:40px 24px}
+  .empty-card h3{font-size:1.2rem;margin-bottom:6px}
+
+  /* ---------- modal ---------- */
   .modal{position:fixed;inset:0;background:rgba(12,19,34,.5);display:none;align-items:center;justify-content:center;z-index:120;padding:20px}
   .modal.open{display:flex}
-  .modal-card{background:var(--paper);border-radius:18px;padding:26px;width:min(420px,94vw);box-shadow:var(--shadow)}
+  .modal-card{background:var(--paper);border-radius:18px;padding:26px;width:min(420px,94vw);box-shadow:0 30px 80px -30px rgba(12,19,34,.6)}
   .modal-card h3{font-size:1.25rem;margin-bottom:14px}
   .f{margin-bottom:14px}
   .f label{display:block;font-size:.74rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
-  .f input,.f select{width:100%;padding:.7em .9em;border:1px solid var(--line);border-radius:11px;background:var(--cream);font-family:inherit;font-size:1rem;color:var(--ink)}
+  .f input,.f select{width:100%;padding:.7em .9em;border:1px solid var(--line);border-radius:11px;background:#fff;font-family:inherit;font-size:1rem;color:var(--ink)}
   .f input:focus,.f select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(191,155,84,.18)}
   .modal-bar{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
   .modal-msg{font-size:.85rem;color:var(--red);min-height:1.1em;margin-top:4px}
 
-  footer{background:var(--ink-deep);color:rgba(246,242,233,.7);text-align:center;padding:24px;font-size:.84rem}
+  footer{color:var(--ink-soft);text-align:center;padding:26px;font-size:.84rem}
 
-  @media (max-width:860px){ .row-4{grid-template-columns:1fr 1fr} .row-2{grid-template-columns:1fr} .game-grid{grid-template-columns:1fr} }
-  /* dark banner contrast vs pastel logo */
-  header .brand,header .nav-links a{color:var(--cream)}
-  header .brand span,header .brand small{color:var(--gold)}
-  header .nav-links a{opacity:.85}
-  header .nav-links a:hover{opacity:1;color:var(--gold)}
-  header .btn-gold{background:var(--gold);color:var(--ink)}
-  header .btn-gold:hover{background:#d4b069;transform:none;box-shadow:none}
-  header .btn-outline{border-color:rgba(246,242,233,.55);color:var(--cream)}
-  header .btn-outline:hover{background:rgba(246,242,233,.14);color:var(--cream)}
-  header .nav-toggle{color:var(--cream)}
+  @media (max-width:860px){
+    .row-4{grid-template-columns:1fr 1fr} .row-2{grid-template-columns:1fr}
+    .grid3{grid-template-columns:1fr} .game-grid{grid-template-columns:1fr}
+    .viewnav{width:100%}
+  }
 </style>
 </head>
 <body>
@@ -142,99 +168,115 @@
 </header>
 
 <main class="wrap" id="app" style="display:none">
-  <div class="hello">
+  <section class="hero">
     <div>
       <span class="eyebrow">Parent Portal</span>
       <h1>Hello, <span id="parentName">there</span> 👋</h1>
-      <p>Select a child to view their progress.</p>
+      <p class="sub">Track your child’s journey — progress, topics and more.</p>
     </div>
     <span class="updated" id="updated"></span>
-  </div>
+  </section>
 
   <!-- child selector -->
   <div class="kidbar" id="kidbar"></div>
 
   <!-- when parent has no children yet -->
-  <div id="noKids" class="card" style="display:none">
+  <div id="noKids" class="card empty-card" style="display:none">
     <h3>Add your first child</h3>
-    <p class="empty" style="margin:6px 0 14px">Add your child to start tracking their chess progress.</p>
+    <p class="empty" style="margin:6px 0 16px">Add your child to start tracking their chess progress.</p>
     <button class="btn btn-gold" id="noKidsAdd" type="button">+ Add a child</button>
   </div>
 
-  <!-- per-child stats -->
-  <div id="stats" style="display:none">
-    <div id="noData" class="card" style="display:none">
-      <h3>No progress recorded yet</h3>
-      <p class="empty">Your coach hasn't added stats for <b id="ndName">this child</b> yet. Please check back soon.</p>
-    </div>
+  <!-- premium segmented navigation -->
+  <nav class="viewnav" id="viewnav" aria-label="Dashboard sections">
+    <button type="button" data-view="overview" class="active">Overview</button>
+    <button type="button" data-view="topics">Topics</button>
+    <button type="button" data-view="library">Library</button>
+    <button type="button" data-view="store">Store</button>
+  </nav>
 
-    <div id="statBody">
-      <div class="section-title"><span class="ico">📋</span><h2>Classroom</h2></div>
-      <div class="cards row-2">
-        <div class="card ring-card">
-          <div class="ring" id="attRing"><b id="attPct">0%</b></div>
-          <div class="meta"><div class="label">Attendance</div><h3>Classes attended</h3>
-            <div class="stat"><div class="num" id="classes">0<small>/0</small></div></div></div>
-        </div>
-        <div class="card">
-          <div class="stat" style="margin-bottom:14px"><div class="label">Hours in classroom</div><div class="num" id="hours">0</div></div>
-          <div class="stat"><div class="label">Leaderboard points</div><div class="num" id="lbPoints">0</div></div>
-        </div>
+  <!-- ===================== OVERVIEW ===================== -->
+  <section class="view" data-view="overview">
+    <div id="stats" style="display:none">
+      <div id="noData" class="card empty-card" style="display:none">
+        <h3>No progress recorded yet</h3>
+        <p class="empty">Your coach hasn't added stats for <b id="ndName">this child</b> yet. Please check back soon.</p>
       </div>
 
-      <div class="section-title"><span class="ico">🎯</span><h2>Quiz</h2></div>
-      <div class="cards row-4">
-        <div class="card stat"><div class="label">Quizzes completed</div><div class="num" id="quizDone">0<small>/0</small></div></div>
-        <div class="card stat"><div class="label">Problems solved</div><div class="num" id="problems">0<small>/0</small></div></div>
-        <div class="card stat"><div class="label">Time taken</div><div class="num" id="quizTime" style="font-size:1.4rem">—</div></div>
-        <div class="card stat"><div class="label">Points scored</div><div class="num" id="quizPoints">0</div></div>
-      </div>
-
-      <div class="section-title"><span class="ico">♟️</span><h2>Game Arena</h2></div>
-      <div class="cards row-2">
-        <div class="card">
-          <div class="game-grid">
-            <div>
-              <div class="stat" style="margin-bottom:14px"><div class="label">Games played</div><div class="num" id="games">0</div></div>
-              <div class="stat"><div class="label">Time spent playing</div><div class="num" id="gameTime" style="font-size:1.4rem">—</div></div>
-              <div class="legend">
-                <div><span class="dot" style="background:var(--green)"></span> Wins · <b id="wins">0</b> <span id="winPct" style="color:var(--ink-soft)"></span></div>
-                <div><span class="dot" style="background:var(--red)"></span> Losses · <b id="losses">0</b></div>
-                <div><span class="dot" style="background:var(--blue)"></span> Draws · <b id="draws">0</b></div>
-              </div>
-            </div>
-            <div><div class="chart-box"><canvas id="wldChart"></canvas><div id="chartFallback" class="chart-fallback" style="display:none"></div></div></div>
+      <div id="statBody">
+        <div class="section-title"><span class="ico">📋</span><h2>Classroom</h2></div>
+        <div class="cards row-2">
+          <div class="card ring-card">
+            <div class="ring" id="attRing"><b id="attPct">0%</b></div>
+            <div class="meta"><div class="label">Attendance</div><h3>Classes attended</h3>
+              <div class="stat"><div class="num" id="classes">0<small>/0</small></div></div></div>
+          </div>
+          <div class="card">
+            <div class="stat" style="margin-bottom:14px"><div class="label">Hours in classroom</div><div class="num" id="hours">0</div></div>
+            <div class="stat"><div class="label">Leaderboard points</div><div class="num" id="lbPoints">0</div></div>
           </div>
         </div>
-        <div class="card">
-          <div class="section-title" style="margin:0 0 10px"><span class="ico">🏆</span><h2 style="font-size:1.1rem">Tournament</h2></div>
-          <div class="stat" style="margin-bottom:14px"><div class="label">Tournaments played</div><div class="num" id="tourPlayed">0</div></div>
-          <div class="stat"><div class="label">Best result</div><div class="num" id="tourBest" style="font-size:1.4rem">—</div></div>
+
+        <div class="section-title"><span class="ico">🎯</span><h2>Quiz</h2></div>
+        <div class="cards row-4">
+          <div class="card stat"><div class="label">Quizzes completed</div><div class="num" id="quizDone">0<small>/0</small></div></div>
+          <div class="card stat"><div class="label">Problems solved</div><div class="num" id="problems">0<small>/0</small></div></div>
+          <div class="card stat"><div class="label">Time taken</div><div class="num" id="quizTime" style="font-size:1.4rem">—</div></div>
+          <div class="card stat"><div class="label">Points scored</div><div class="num" id="quizPoints">0</div></div>
         </div>
+
+        <div class="section-title"><span class="ico">♟️</span><h2>Game Arena</h2></div>
+        <div class="cards row-2">
+          <div class="card">
+            <div class="game-grid">
+              <div>
+                <div class="stat" style="margin-bottom:14px"><div class="label">Games played</div><div class="num" id="games">0</div></div>
+                <div class="stat"><div class="label">Time spent playing</div><div class="num" id="gameTime" style="font-size:1.4rem">—</div></div>
+                <div class="legend">
+                  <div><span class="dot" style="background:var(--green)"></span> Wins · <b id="wins">0</b> <span id="winPct" style="color:var(--ink-soft)"></span></div>
+                  <div><span class="dot" style="background:var(--red)"></span> Losses · <b id="losses">0</b></div>
+                  <div><span class="dot" style="background:var(--blue)"></span> Draws · <b id="draws">0</b></div>
+                </div>
+              </div>
+              <div><div class="chart-box"><canvas id="wldChart"></canvas><div id="chartFallback" class="chart-fallback" style="display:none"></div></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-title" style="margin:0 0 10px"><span class="ico">🏆</span><h2 style="font-size:1.1rem">Tournament</h2></div>
+            <div class="stat" style="margin-bottom:14px"><div class="label">Tournaments played</div><div class="num" id="tourPlayed">0</div></div>
+            <div class="stat"><div class="label">Best result</div><div class="num" id="tourBest" style="font-size:1.4rem">—</div></div>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="ico">📝</span><h2>Coach's notes</h2></div>
+        <div class="card"><div class="notes" id="notes"><span class="empty">No notes yet.</span></div></div>
       </div>
-
-      <div class="section-title"><span class="ico">📝</span><h2>Coach's notes</h2></div>
-      <div class="card"><div class="notes" id="notes"><span class="empty">No notes yet.</span></div></div>
     </div>
-  </div>
+  </section>
 
-  <!-- ===== TOPICS (assigned to this parent / child) ===== -->
-  <div class="section-title"><span class="ico">📚</span><h2>Your topics</h2></div>
-  <div id="topicsArea">
-    <div class="card"><span class="empty">No topics assigned yet.</span></div>
-  </div>
+  <!-- ===================== TOPICS ===================== -->
+  <section class="view" data-view="topics" hidden>
+    <div class="panel-head"><h2>Your topics</h2><p>Lessons &amp; materials your coach has shared.</p></div>
+    <div id="topicsArea">
+      <div class="card"><span class="empty">No topics assigned yet.</span></div>
+    </div>
+  </section>
 
-  <!-- ===== OPEN REFERENCE MATERIALS (everyone) ===== -->
-  <div class="section-title"><span class="ico">📖</span><h2>Open Source Reference Materials</h2></div>
-  <div class="cards" id="openMaterials" style="grid-template-columns:repeat(3,1fr)">
-    <div class="card"><span class="empty">No reference materials yet.</span></div>
-  </div>
+  <!-- ===================== LIBRARY ===================== -->
+  <section class="view" data-view="library" hidden>
+    <div class="panel-head"><h2>Reference Library</h2><p>Open-source books &amp; videos, free for every student.</p></div>
+    <div class="cards grid3" id="openMaterials">
+      <div class="card"><span class="empty">No reference materials yet.</span></div>
+    </div>
+  </section>
 
-  <!-- ===== PRODUCTS ===== -->
-  <div class="section-title"><span class="ico">🛒</span><h2>Recommended products</h2></div>
-  <div class="cards" id="products" style="grid-template-columns:repeat(3,1fr)">
-    <div class="card"><span class="empty">No products yet.</span></div>
-  </div>
+  <!-- ===================== STORE ===================== -->
+  <section class="view" data-view="store" hidden>
+    <div class="panel-head"><h2>Recommended gear</h2><p>Hand-picked boards &amp; books to practise at home.</p></div>
+    <div class="cards grid3" id="products">
+      <div class="card"><span class="empty">No products yet.</span></div>
+    </div>
+  </section>
 </main>
 
 <!-- add-child modal -->
@@ -261,6 +303,20 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
+
+  /* ---- premium segmented navigation (dependency-free) ---- */
+  (function(){
+    var nav = document.getElementById('viewnav');
+    if (!nav) return;
+    var btns = nav.querySelectorAll('[data-view]');
+    var panels = document.querySelectorAll('section.view');
+    nav.addEventListener('click', function(e){
+      var b = e.target.closest('[data-view]'); if (!b) return;
+      var v = b.getAttribute('data-view');
+      Array.prototype.forEach.call(btns, function(x){ x.classList.toggle('active', x===b); });
+      Array.prototype.forEach.call(panels, function(p){ p.hidden = (p.getAttribute('data-view')!==v); });
+    });
+  })();
 
   (function () {
     var byId = function (id){ return document.getElementById(id); };
@@ -448,7 +504,7 @@
       if (!window.Chart || tot===0){
         if (canvas) canvas.style.display='none';
         var fb=byId('chartFallback'); fb.style.display='block';
-        fb.innerHTML = tot===0 ? '<span style="font-size:.9rem;color:#26314d">No games yet</span>' : (Math.round(w/tot*100)+'%<div style="font-size:.7rem;color:#26314d">win rate</div>');
+        fb.innerHTML = tot===0 ? '<span style="font-size:.9rem;color:#5a6478">No games yet</span>' : (Math.round(w/tot*100)+'%<div style="font-size:.7rem;color:#5a6478">win rate</div>');
         return;
       }
       canvas.style.display='block'; byId('chartFallback').style.display='none';
