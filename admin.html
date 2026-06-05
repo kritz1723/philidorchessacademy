@@ -174,8 +174,10 @@
             <div class="f" style="margin-bottom:12px"><label>Title</label><input id="sm_title" type="text" required placeholder="e.g. Knight forks worksheet"></div>
             <div class="grid2">
               <div class="f"><label>Session label (optional)</label><input id="sm_session" type="text" placeholder="Session 4"></div>
-              <div class="f"><label>Link / page URL (or upload below)</label><input id="sm_url" type="text" placeholder="materials/session4.html or https://…"></div>
+              <div class="f"><label>Pick a material page</label>
+                <select id="sm_pick"><option value="">— Select from list —</option><option value="__custom__">Other (type a link)…</option></select></div>
             </div>
+            <div class="f" id="sm_url_wrap" style="margin:12px 0;display:none"><label>Custom link / page URL</label><input id="sm_url" type="text" placeholder="materials/session4.html or https://…"></div>
             <div class="f" style="margin:12px 0"><label>…or upload a file (PDF, HTML, image)</label><input id="sm_file" type="file" accept=".pdf,.html,.htm,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx"></div>
             <div class="f" style="margin:12px 0"><label>Description (optional)</label><textarea id="sm_desc" rows="2"></textarea></div>
             <div class="grid2">
@@ -307,6 +309,7 @@
     var PARENTS = {}, CHILDREN = [];
 
     function init(){
+      loadMaterialList();
       loadParents(function(){
         loadChildren();
         fillSessionTargets();
@@ -314,6 +317,33 @@
         loadOpen();
         loadProducts();
       });
+    }
+
+    // Populate the "Pick a material page" dropdown from materials/manifest.json
+    function loadMaterialList(){
+      var pick = byId('sm_pick');
+      fetch('materials/manifest.json', { cache:'no-store' }).then(function(res){ return res.json(); }).then(function(data){
+        var items = (data && data.materials) || [];
+        items.forEach(function(m){
+          if (!m || !m.url) return;
+          var o=document.createElement('option'); o.value=m.url; o.textContent=m.title || m.url;
+          pick.insertBefore(o, pick.querySelector('option[value="__custom__"]'));
+        });
+      }).catch(function(){ /* manifest missing — custom + upload still work */ });
+    }
+    byId('sm_pick').addEventListener('change', function(){
+      byId('sm_url_wrap').style.display = (this.value==='__custom__') ? 'block' : 'none';
+      // auto-fill title from the picked page if title is empty
+      var t = byId('sm_title');
+      if (this.value && this.value!=='__custom__' && !t.value.trim()){
+        var opt=this.options[this.selectedIndex]; t.value = opt ? opt.textContent : '';
+      }
+    });
+    // chosen material URL: picked value, or the custom field
+    function pickedUrl(){
+      var p = byId('sm_pick').value;
+      if (p && p!=='__custom__') return p;
+      return byId('sm_url').value.trim();
     }
 
     // ============ STATS ============
@@ -407,9 +437,9 @@
     byId('smForm').addEventListener('submit', function(e){
       e.preventDefault();
       var msg=byId('smMsg'); msg.className='msg';
-      var typedUrl=byId('sm_url').value.trim();
+      var typedUrl=pickedUrl();
       var hasFile = byId('sm_file').files && byId('sm_file').files[0];
-      if (!typedUrl && !hasFile){ msg.textContent='Paste a link OR choose a file to upload.'; msg.classList.add('err'); return; }
+      if (!typedUrl && !hasFile){ msg.textContent='Pick a material, paste a link, OR upload a file.'; msg.classList.add('err'); return; }
       if (typedUrl && !safeUrl(typedUrl)){ msg.textContent='Link must be http(s) or a .html page path.'; msg.classList.add('err'); return; }
       var type=byId('sm_target_type').value, target=byId('sm_target').value;
       if (!target){ msg.textContent='Choose a '+type+'.'; msg.classList.add('err'); return; }
@@ -423,7 +453,7 @@
       }).then(function(r){
         btn.disabled=false;
         if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
-        msg.textContent='✓ Added'; msg.className='msg ok'; byId('smForm').reset(); fillSessionTargets(); loadSessionMaterials();
+        msg.textContent='✓ Added'; msg.className='msg ok'; byId('smForm').reset(); byId('sm_url_wrap').style.display='none'; fillSessionTargets(); loadSessionMaterials();
       }).catch(function(err){ btn.disabled=false; msg.textContent='Upload failed: '+(err.message||err); msg.classList.add('err'); });
     });
     byId('smRefresh').addEventListener('click', loadSessionMaterials);

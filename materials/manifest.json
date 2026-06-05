@@ -1,0 +1,9 @@
+{
+  "_comment": "List of session-material pages in this repo. Add an entry for each new page you build; the Admin → Session Material dropdown reads this file.",
+  "materials": [
+    {
+      "title": "Session 2 Recap",
+      "url": "materials/session2-recap.html"
+    }
+  ]
+}
