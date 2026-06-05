@@ -206,9 +206,10 @@
           <div style="border-top:1px solid var(--line);margin-top:8px"><div id="topicMaterialList"></div></div>
         </section>
 
-        <!-- Panel C: assignments for selected topic -->
+        <!-- Panel C: bulk-assign ALL materials in the selected topic -->
         <section class="panel addcard hidden" id="topicAssign">
-          <h2>Who can see “<span id="tpAssignName"></span>”?</h2>
+          <h2>Assign every material in “<span id="tpAssignName"></span>”</h2>
+          <p style="color:var(--ink-soft);font-size:.86rem;margin:-6px 0 14px">Shortcut: applies this selection to <b>all</b> materials in the topic at once (replaces each material's current assignment). For one-by-one control, use a material's <b>Settings</b> above. Release stays controlled per material.</p>
           <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-weight:600">
             <input type="checkbox" id="tp_assign_all"> Assign to all parents
           </label>
@@ -286,6 +287,33 @@
         <button type="submit" class="btn btn-gold">Add child</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- per-material settings: release + assignment -->
+<div class="modal" id="matModal">
+  <div class="modal-card" style="width:min(560px,94vw)">
+    <h3>Material — <span id="mmName"></span></h3>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-weight:600">
+      <input type="checkbox" id="mm_released"> Released (parents can see it)
+    </label>
+    <div class="f" style="margin-bottom:14px">
+      <label>Auto-release date (optional)</label>
+      <input id="mm_release_at" type="datetime-local">
+      <small style="display:block;margin-top:4px;color:#9aa3b8">Leave blank to control release only with the toggle. If set, it auto-releases at this time.</small>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-weight:600">
+      <input type="checkbox" id="mm_assign_all"> Assign to all parents
+    </label>
+    <div class="grid2">
+      <div class="f"><label>Parents</label><div id="mm_parents" style="max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--cream)"></div></div>
+      <div class="f"><label>Children</label><div id="mm_children" style="max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--cream)"></div></div>
+    </div>
+    <div class="modal-msg" id="mmMsg"></div>
+    <div class="modal-bar">
+      <button type="button" class="btn btn-ghost" id="mmCancel">Cancel</button>
+      <button type="button" class="btn btn-gold" id="mmSave">Save</button>
+    </div>
   </div>
 </div>
 
@@ -529,6 +557,8 @@
       }).catch(function(err){ btn.disabled=false; msg.textContent='Upload failed: '+(err.message||err); msg.classList.add('err'); });
     });
 
+    function matReleased(m){ return !!(m.is_released || (m.release_at && new Date(m.release_at) <= new Date())); }
+
     function loadTopicMaterials(){
       if (!CURRENT_TOPIC) return;
       client.from('topic_materials').select('*').eq('topic_id', CURRENT_TOPIC.id).order('sort_order').order('created_at').then(function(r){
@@ -538,63 +568,116 @@
           var d=document.createElement('div'); d.className='itemrow';
           var link = m.storage_path ? '<a href="#" data-path="'+esc(m.storage_path)+'" class="signed">open file ↗</a>'
                                     : '<a href="'+esc(m.url)+'" target="_blank" rel="noopener">open ↗</a>';
-          d.innerHTML='<div class="info"><b>'+esc(m.title)+'</b><span>'+link+'</span></div>'+
-            '<button class="btn btn-danger btn-xs" type="button">Delete</button>';
+          var rel = matReleased(m);
+          var badges = '<span class="pill" style="background:'+(rel?'#cfe9dd':'#ecd9d8')+'">'+(rel?'Released':'Hidden')+'</span>'
+                     + (m.assign_all?'<span class="pill">All parents</span>':'');
+          var sub = link + (m.release_at ? ' · auto-release '+esc(new Date(m.release_at).toLocaleString()) : '');
+          d.innerHTML='<div class="info"><b>'+esc(m.title)+' '+badges+'</b><span>'+sub+'</span></div>'+
+            '<div style="display:flex;gap:6px">'+
+              '<button class="btn btn-ghost btn-xs settings" type="button">Settings</button>'+
+              '<button class="btn btn-danger btn-xs del" type="button">Delete</button></div>';
           var sg=d.querySelector('a.signed'); if (sg) sg.addEventListener('click', signedOpen);
-          d.querySelector('button').addEventListener('click', function(){ delRow('topic_materials', m.id, loadTopicMaterials, m.storage_path); });
+          d.querySelector('.settings').addEventListener('click', function(){ openMatModal(m); });
+          d.querySelector('.del').addEventListener('click', function(){ delRow('topic_materials', m.id, loadTopicMaterials, m.storage_path); });
           box.appendChild(d);
         });
       });
     }
 
-    // -- assignments (editable) --
-    function loadTopicAssignments(){
-      if (!CURRENT_TOPIC) return;
-      byId('tp_assign_all').checked = !!CURRENT_TOPIC.assign_all;
-      // build checkbox lists fresh
-      var pbox=byId('tp_parents'); pbox.innerHTML='';
-      Object.keys(PARENTS).forEach(function(id){
+    // ---- per-material settings (release + assignment) ----
+    var MAT_EDIT = null;
+    function toLocalInput(iso){
+      try { var dt=new Date(iso); var local=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return local.toISOString().slice(0,16); }
+      catch(e){ return ''; }
+    }
+    function fillChecklist(boxId, cls, items){
+      var box=byId(boxId); box.innerHTML='';
+      items.forEach(function(it){
         var l=document.createElement('label'); l.style.cssText='display:flex;align-items:center;gap:8px;padding:3px 0;font-weight:500';
-        l.innerHTML='<input type="checkbox" class="pchk" value="'+id+'"> '+esc(PARENTS[id].full_name||'(no name)');
-        pbox.appendChild(l);
+        l.innerHTML='<input type="checkbox" class="'+cls+'" value="'+it.value+'"> '+it.label;
+        box.appendChild(l);
       });
-      var cbox=byId('tp_children'); cbox.innerHTML='';
-      CHILDREN.forEach(function(c){ var par=PARENTS[c.parent_id];
-        var l=document.createElement('label'); l.style.cssText='display:flex;align-items:center;gap:8px;padding:3px 0;font-weight:500';
-        l.innerHTML='<input type="checkbox" class="cchk" value="'+c.id+'"> '+esc(c.name)+(par?' <span style="color:var(--ink-soft)">('+esc(par.full_name||'')+')</span>':'');
-        cbox.appendChild(l);
-      });
-      // check existing
-      client.from('topic_assignments').select('parent_id,child_id').eq('topic_id', CURRENT_TOPIC.id).then(function(r){
+    }
+    function openMatModal(m){
+      MAT_EDIT=m;
+      byId('mmName').textContent=m.title;
+      byId('mmMsg').textContent=''; byId('mmMsg').className='modal-msg';
+      byId('mm_released').checked=!!m.is_released;
+      byId('mm_release_at').value = m.release_at ? toLocalInput(m.release_at) : '';
+      byId('mm_assign_all').checked=!!m.assign_all;
+      fillChecklist('mm_parents','mmpchk', Object.keys(PARENTS).map(function(id){ return { value:id, label:esc(PARENTS[id].full_name||'(no name)') }; }));
+      fillChecklist('mm_children','mmcchk', CHILDREN.map(function(c){ var par=PARENTS[c.parent_id]; return { value:c.id, label:esc(c.name)+(par?' <span style="color:var(--ink-soft)">('+esc(par.full_name||'')+')</span>':'') }; }));
+      client.from('material_assignments').select('parent_id,child_id').eq('material_id', m.id).then(function(r){
         (r.data||[]).forEach(function(a){
-          if (a.parent_id){ var pe=byId('tp_parents').querySelector('.pchk[value="'+a.parent_id+'"]'); if (pe) pe.checked=true; }
-          if (a.child_id){ var ce=byId('tp_children').querySelector('.cchk[value="'+a.child_id+'"]'); if (ce) ce.checked=true; }
+          if (a.parent_id){ var pe=byId('mm_parents').querySelector('.mmpchk[value="'+a.parent_id+'"]'); if (pe) pe.checked=true; }
+          if (a.child_id){ var ce=byId('mm_children').querySelector('.mmcchk[value="'+a.child_id+'"]'); if (ce) ce.checked=true; }
         });
       });
+      byId('matModal').classList.add('open');
+    }
+    function closeMatModal(){ byId('matModal').classList.remove('open'); MAT_EDIT=null; }
+    byId('mmCancel').addEventListener('click', closeMatModal);
+    byId('matModal').addEventListener('click', function(e){ if (e.target===byId('matModal')) closeMatModal(); });
+    byId('mmSave').addEventListener('click', function(){
+      if (!MAT_EDIT) return;
+      var msg=byId('mmMsg'); msg.className='modal-msg'; msg.textContent='Saving…';
+      var relAt = byId('mm_release_at').value ? new Date(byId('mm_release_at').value).toISOString() : null;
+      var mid = MAT_EDIT.id;
+      var patch={ is_released: byId('mm_released').checked, release_at: relAt, assign_all: byId('mm_assign_all').checked };
+      client.from('topic_materials').update(patch).eq('id', mid).then(function(u){
+        if (u.error){ msg.textContent='Error: '+u.error.message; return; }
+        var parents=Array.prototype.map.call(document.querySelectorAll('#mm_parents .mmpchk:checked'),function(x){return x.value;});
+        var kids   =Array.prototype.map.call(document.querySelectorAll('#mm_children .mmcchk:checked'),function(x){return x.value;});
+        client.from('material_assignments').delete().eq('material_id', mid).then(function(dd){
+          if (dd.error){ msg.textContent='Error: '+dd.error.message; return; }
+          var rows=[];
+          parents.forEach(function(pid){ rows.push({ material_id:mid, parent_id:pid, child_id:null }); });
+          kids.forEach(function(cid){ rows.push({ material_id:mid, parent_id:null, child_id:cid }); });
+          var fin=function(err){ if (err){ msg.textContent='Error: '+(err.message||err); return; } msg.textContent='✓ Saved'; closeMatModal(); loadTopicMaterials(); };
+          if (!rows.length) return fin(null);
+          client.from('material_assignments').insert(rows).then(function(i){ fin(i.error); });
+        });
+      });
+    });
+
+    // -- topic-level bulk assign (applies to ALL materials in the topic) --
+    function loadTopicAssignments(){
+      if (!CURRENT_TOPIC) return;
+      byId('tp_assign_all').checked = false;
+      fillChecklist('tp_parents','pchk', Object.keys(PARENTS).map(function(id){ return { value:id, label:esc(PARENTS[id].full_name||'(no name)') }; }));
+      fillChecklist('tp_children','cchk', CHILDREN.map(function(c){ var par=PARENTS[c.parent_id]; return { value:c.id, label:esc(c.name)+(par?' <span style="color:var(--ink-soft)">('+esc(par.full_name||'')+')</span>':'') }; }));
     }
 
     byId('tpAssignSave').addEventListener('click', function(){
       if (!CURRENT_TOPIC) return;
-      var msg=byId('tpAssignMsg'); msg.className='msg'; msg.textContent='Saving…';
+      var msg=byId('tpAssignMsg'); msg.className='msg';
       var assignAll = byId('tp_assign_all').checked;
       var parents = Array.prototype.map.call(document.querySelectorAll('#tp_parents .pchk:checked'), function(x){ return x.value; });
       var kids    = Array.prototype.map.call(document.querySelectorAll('#tp_children .cchk:checked'), function(x){ return x.value; });
-      // 1) update assign_all on the topic
-      client.from('topics').update({ assign_all:assignAll }).eq('id', CURRENT_TOPIC.id).then(function(u){
-        if (u.error){ msg.textContent='Error: '+u.error.message; msg.classList.add('err'); return; }
-        CURRENT_TOPIC.assign_all=assignAll;
-        // 2) reconcile: delete all, then insert the current selection
-        client.from('topic_assignments').delete().eq('topic_id', CURRENT_TOPIC.id).then(function(d){
-          if (d.error){ msg.textContent='Error: '+d.error.message; msg.classList.add('err'); return; }
-          var rows=[];
-          parents.forEach(function(pid){ rows.push({ topic_id:CURRENT_TOPIC.id, parent_id:pid, child_id:null }); });
-          kids.forEach(function(cid){ rows.push({ topic_id:CURRENT_TOPIC.id, parent_id:null, child_id:cid }); });
-          var done=function(err){
-            if (err){ msg.textContent='Error: '+(err.message||err); msg.classList.add('err'); return; }
-            msg.textContent='✓ Saved'; msg.className='msg ok'; loadTopics();
-          };
-          if (!rows.length) return done(null);
-          client.from('topic_assignments').insert(rows).then(function(i){ done(i.error); });
+      if (!window.confirm('Apply this assignment to ALL materials in “'+CURRENT_TOPIC.name+'”? This replaces each material’s current assignment.')) return;
+      msg.textContent='Saving…';
+      client.from('topic_materials').select('id').eq('topic_id', CURRENT_TOPIC.id).then(function(mr){
+        if (mr.error){ msg.textContent='Error: '+mr.error.message; msg.classList.add('err'); return; }
+        var ids=(mr.data||[]).map(function(x){ return x.id; });
+        if (!ids.length){ msg.textContent='Add materials first — nothing to assign.'; msg.classList.add('err'); return; }
+        // 1) set assign_all on every material in the topic
+        client.from('topic_materials').update({ assign_all:assignAll }).eq('topic_id', CURRENT_TOPIC.id).then(function(u){
+          if (u.error){ msg.textContent='Error: '+u.error.message; msg.classList.add('err'); return; }
+          // 2) reconcile material_assignments for these materials
+          client.from('material_assignments').delete().in('material_id', ids).then(function(d){
+            if (d.error){ msg.textContent='Error: '+d.error.message; msg.classList.add('err'); return; }
+            var rows=[];
+            ids.forEach(function(mid){
+              parents.forEach(function(pid){ rows.push({ material_id:mid, parent_id:pid, child_id:null }); });
+              kids.forEach(function(cid){ rows.push({ material_id:mid, parent_id:null, child_id:cid }); });
+            });
+            var done=function(err){
+              if (err){ msg.textContent='Error: '+(err.message||err); msg.classList.add('err'); return; }
+              msg.textContent='✓ Applied to all materials'; msg.className='msg ok'; loadTopicMaterials();
+            };
+            if (!rows.length) return done(null);
+            client.from('material_assignments').insert(rows).then(function(i){ done(i.error); });
+          });
         });
       });
     });
