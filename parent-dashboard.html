@@ -362,36 +362,38 @@
       });
     }
 
-    // Topics visible to this parent for the ACTIVE child (RPC honors
-    // active-child scoping; parent-level + assign_all topics always show).
+    // Materials visible to this parent for the ACTIVE child. The RPC
+    // returns only RELEASED materials assigned to them (active-child
+    // scoped), each carrying its topic so we can group under headings.
     function loadTopics(){
       var area = byId('topicsArea');
-      client.rpc('get_visible_topics', { p_child: ACTIVE || null }).then(function (r){
-        var topics = r.data || [];
-        if (!topics.length){ area.innerHTML = '<div class="card"><span class="empty">No topics assigned yet.</span></div>'; return; }
-        var ids = topics.map(function(t){ return t.id; });
-        client.from('topic_materials').select('*').in('topic_id', ids).order('sort_order').order('created_at').then(function (mr){
-          var byTopic = {}; (mr.data||[]).forEach(function(m){ (byTopic[m.topic_id]=byTopic[m.topic_id]||[]).push(m); });
-          area.innerHTML = '';
-          topics.forEach(function(t){
-            var head = document.createElement('div'); head.className='section-title'; head.style.margin='18px 0 10px';
-            head.innerHTML = '<span class="ico">📘</span><h2 style="font-size:1.15rem">'+esc2(t.name)+'</h2>';
-            area.appendChild(head);
-            if (t.description){ var desc=document.createElement('p'); desc.style.cssText='color:var(--ink-soft);margin:-4px 0 10px'; desc.textContent=t.description; area.appendChild(desc); }
-            var grid = document.createElement('div'); grid.className='cards'; grid.style.gridTemplateColumns='repeat(2,1fr)';
-            var mats = byTopic[t.id] || [];
-            if (!mats.length){ grid.innerHTML = '<div class="card"><span class="empty">No materials yet.</span></div>'; }
-            mats.forEach(function(m){
-              var d=document.createElement('div'); d.className='card mat';
-              var link = m.storage_path
-                ? '<a class="open" href="#" data-path="'+esc2(m.storage_path)+'">Open material ↗</a>'
-                : '<a class="open" href="'+esc2(m.url)+'" target="_blank" rel="noopener">Open material ↗</a>';
-              d.innerHTML = '<h4>'+esc2(m.title)+'</h4>'+(m.description?'<p>'+esc2(m.description)+'</p>':'')+link;
-              var sg=d.querySelector('a[data-path]'); if (sg) sg.addEventListener('click', signedOpen);
-              grid.appendChild(d);
-            });
-            area.appendChild(grid);
+      client.rpc('get_visible_materials', { p_child: ACTIVE || null }).then(function (r){
+        var mats = r.data || [];
+        if (!mats.length){ area.innerHTML = '<div class="card"><span class="empty">No materials shared yet. Your coach will release them as topics are covered.</span></div>'; return; }
+        // group by topic, preserving RPC order
+        var order = [], groups = {};
+        mats.forEach(function(m){
+          if (!groups[m.topic_id]){ groups[m.topic_id] = { name:m.topic_name, description:m.topic_description, items:[] }; order.push(m.topic_id); }
+          groups[m.topic_id].items.push(m);
+        });
+        area.innerHTML = '';
+        order.forEach(function(tid){
+          var g = groups[tid];
+          var head = document.createElement('div'); head.className='section-title'; head.style.margin='18px 0 10px';
+          head.innerHTML = '<span class="ico">📘</span><h2 style="font-size:1.15rem">'+esc2(g.name)+'</h2>';
+          area.appendChild(head);
+          if (g.description){ var desc=document.createElement('p'); desc.style.cssText='color:var(--ink-soft);margin:-4px 0 10px'; desc.textContent=g.description; area.appendChild(desc); }
+          var grid = document.createElement('div'); grid.className='cards'; grid.style.gridTemplateColumns='repeat(2,1fr)';
+          g.items.forEach(function(m){
+            var d=document.createElement('div'); d.className='card mat';
+            var link = m.storage_path
+              ? '<a class="open" href="#" data-path="'+esc2(m.storage_path)+'">Open material ↗</a>'
+              : '<a class="open" href="'+esc2(m.url)+'" target="_blank" rel="noopener">Open material ↗</a>';
+            d.innerHTML = '<h4>'+esc2(m.title)+'</h4>'+(m.description?'<p>'+esc2(m.description)+'</p>':'')+link;
+            var sg=d.querySelector('a[data-path]'); if (sg) sg.addEventListener('click', signedOpen);
+            grid.appendChild(d);
           });
+          area.appendChild(grid);
         });
       });
     }
