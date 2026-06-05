@@ -31,20 +31,31 @@
   .brand{display:flex;align-items:center;gap:11px;font-family:"Fraunces";font-weight:600;font-size:1.02rem}
   .brand img{height:38px;width:38px;border-radius:9px;object-fit:cover;box-shadow:0 6px 18px -8px rgba(12,19,34,.5)}
   .brand small{display:block;font-family:"Hanken Grotesk";font-weight:500;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
-  .btn{font-family:"Hanken Grotesk";font-weight:600;font-size:.88rem;padding:.55em 1.2em;border-radius:999px;cursor:pointer;border:none;transition:.2s}
+  .btn{font-family:"Hanken Grotesk";font-weight:600;font-size:.88rem;padding:.55em 1.2em;border-radius:999px;cursor:pointer;border:none;transition:.2s;display:inline-block}
   .btn-outline{background:transparent;border:1.5px solid var(--ink);color:var(--ink)}
   .btn-outline:hover{background:var(--ink);color:var(--cream)}
   .btn-gold{background:var(--ink);color:var(--cream)}
   .btn-gold:hover{transform:translateY(-2px);box-shadow:0 14px 28px -14px rgba(12,19,34,.6)}
+  .btn-sm{font-size:.8rem;padding:.45em 1em}
 
   #gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--cream);z-index:100;font-family:"Fraunces";font-style:italic;color:var(--ink-soft)}
 
-  main{padding:34px 0 70px}
-  .hello{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:26px}
+  main{padding:28px 0 70px}
+  .hello{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:18px}
   .hello h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:.2em 0 .1em}
   .hello p{color:var(--ink-soft)}
-  .chip{display:inline-flex;align-items:center;gap:7px;background:var(--mint);color:var(--ink);font-size:.82rem;font-weight:600;padding:.35em .9em;border-radius:999px}
   .updated{font-size:.78rem;color:var(--ink-soft)}
+
+  /* child selector tabs */
+  .kidbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:6px 0 24px}
+  .kidtab{display:inline-flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:.5em 1.1em;cursor:pointer;font-weight:600;font-size:.9rem;transition:.18s;box-shadow:var(--shadow)}
+  .kidtab:hover{transform:translateY(-1px)}
+  .kidtab.active{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+  .kidtab .lvl{font-size:.72rem;font-weight:500;opacity:.7}
+  .kidtab.active .lvl{opacity:.85}
+  .addkid{border:1.5px dashed var(--gold);color:var(--gold);background:transparent;border-radius:999px;padding:.5em 1.1em;cursor:pointer;font-weight:600;font-size:.9rem}
+
+  .chip{display:inline-flex;align-items:center;gap:7px;background:var(--mint);color:var(--ink);font-size:.82rem;font-weight:600;padding:.35em .9em;border-radius:999px}
 
   .section-title{display:flex;align-items:center;gap:10px;margin:30px 0 14px}
   .section-title h2{font-size:1.25rem}
@@ -52,15 +63,12 @@
 
   .cards{display:grid;gap:18px}
   .row-4{grid-template-columns:repeat(4,1fr)}
-  .row-3{grid-template-columns:repeat(3,1fr)}
   .row-2{grid-template-columns:1.2fr .8fr}
   .card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
   .stat .label{font-size:.82rem;color:var(--ink-soft);margin-bottom:6px}
   .stat .num{font-family:"Fraunces";font-size:2rem;line-height:1}
   .stat .num small{font-size:1rem;color:var(--ink-soft)}
-  .stat .sub{font-size:.78rem;color:var(--ink-soft);margin-top:6px}
 
-  /* attendance ring */
   .ring-card{display:flex;align-items:center;gap:20px}
   .ring{--pct:0;width:104px;height:104px;border-radius:50%;flex:none;
     background:conic-gradient(var(--gold) calc(var(--pct)*1%), var(--cream-2) 0);
@@ -70,7 +78,6 @@
   .ring-card .meta .label{font-size:.82rem;color:var(--ink-soft)}
   .ring-card .meta h3{font-size:1.05rem;margin-top:2px}
 
-  /* game arena chart */
   .game-grid{display:grid;grid-template-columns:1fr 200px;gap:18px;align-items:center}
   .legend{display:flex;flex-direction:column;gap:8px;margin-top:12px}
   .legend div{display:flex;align-items:center;gap:8px;font-size:.86rem}
@@ -81,10 +88,21 @@
   .notes{white-space:pre-wrap;color:var(--ink-soft)}
   .empty{color:var(--ink-soft);font-style:italic}
 
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(12,19,34,.5);display:none;align-items:center;justify-content:center;z-index:120;padding:20px}
+  .modal.open{display:flex}
+  .modal-card{background:var(--paper);border-radius:18px;padding:26px;width:min(420px,94vw);box-shadow:var(--shadow)}
+  .modal-card h3{font-size:1.25rem;margin-bottom:14px}
+  .f{margin-bottom:14px}
+  .f label{display:block;font-size:.74rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+  .f input,.f select{width:100%;padding:.7em .9em;border:1px solid var(--line);border-radius:11px;background:var(--cream);font-family:inherit;font-size:1rem;color:var(--ink)}
+  .f input:focus,.f select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(191,155,84,.18)}
+  .modal-bar{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
+  .modal-msg{font-size:.85rem;color:var(--red);min-height:1.1em;margin-top:4px}
+
   footer{background:var(--ink-deep);color:rgba(246,242,233,.7);text-align:center;padding:24px;font-size:.84rem}
 
-  @media (max-width:860px){ .row-4{grid-template-columns:1fr 1fr} .row-3{grid-template-columns:1fr} .row-2{grid-template-columns:1fr} .game-grid{grid-template-columns:1fr} }
-  @media (max-width:520px){ .row-4{grid-template-columns:1fr 1fr} }
+  @media (max-width:860px){ .row-4{grid-template-columns:1fr 1fr} .row-2{grid-template-columns:1fr} .game-grid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -109,74 +127,95 @@
     <div>
       <span class="eyebrow">Parent Portal</span>
       <h1>Hello, <span id="parentName">there</span> 👋</h1>
-      <p>Progress overview for <b id="childName">your child</b> <span class="chip" id="levelChip" style="display:none"></span></p>
+      <p>Select a child to view their progress.</p>
     </div>
     <span class="updated" id="updated"></span>
   </div>
 
-  <div id="noData" class="card" style="display:none">
-    <h3>No progress recorded yet</h3>
-    <p class="empty">Your coach hasn't added stats for your child yet. Please check back soon.</p>
+  <!-- child selector -->
+  <div class="kidbar" id="kidbar"></div>
+
+  <!-- when parent has no children yet -->
+  <div id="noKids" class="card" style="display:none">
+    <h3>Add your first child</h3>
+    <p class="empty" style="margin:6px 0 14px">Add your child to start tracking their chess progress.</p>
+    <button class="btn btn-gold" id="noKidsAdd" type="button">+ Add a child</button>
   </div>
 
-  <div id="stats">
-    <!-- CLASSROOM -->
-    <div class="section-title"><span class="ico">📋</span><h2>Classroom</h2></div>
-    <div class="cards row-2">
-      <div class="card ring-card">
-        <div class="ring" id="attRing"><b id="attPct">0%</b></div>
-        <div class="meta">
-          <div class="label">Attendance</div>
-          <h3>Classes attended</h3>
-          <div class="stat"><div class="num" id="classes">0<small>/0</small></div></div>
+  <!-- per-child stats -->
+  <div id="stats" style="display:none">
+    <div id="noData" class="card" style="display:none">
+      <h3>No progress recorded yet</h3>
+      <p class="empty">Your coach hasn't added stats for <b id="ndName">this child</b> yet. Please check back soon.</p>
+    </div>
+
+    <div id="statBody">
+      <div class="section-title"><span class="ico">📋</span><h2>Classroom</h2></div>
+      <div class="cards row-2">
+        <div class="card ring-card">
+          <div class="ring" id="attRing"><b id="attPct">0%</b></div>
+          <div class="meta"><div class="label">Attendance</div><h3>Classes attended</h3>
+            <div class="stat"><div class="num" id="classes">0<small>/0</small></div></div></div>
+        </div>
+        <div class="card">
+          <div class="stat" style="margin-bottom:14px"><div class="label">Hours in classroom</div><div class="num" id="hours">0</div></div>
+          <div class="stat"><div class="label">Leaderboard points</div><div class="num" id="lbPoints">0</div></div>
         </div>
       </div>
-      <div class="card">
-        <div class="stat" style="margin-bottom:14px"><div class="label">Hours in classroom</div><div class="num" id="hours">0</div></div>
-        <div class="stat"><div class="label">Leaderboard points</div><div class="num" id="lbPoints">0</div></div>
+
+      <div class="section-title"><span class="ico">🎯</span><h2>Quiz</h2></div>
+      <div class="cards row-4">
+        <div class="card stat"><div class="label">Quizzes completed</div><div class="num" id="quizDone">0<small>/0</small></div></div>
+        <div class="card stat"><div class="label">Problems solved</div><div class="num" id="problems">0<small>/0</small></div></div>
+        <div class="card stat"><div class="label">Time taken</div><div class="num" id="quizTime" style="font-size:1.4rem">—</div></div>
+        <div class="card stat"><div class="label">Points scored</div><div class="num" id="quizPoints">0</div></div>
       </div>
-    </div>
 
-    <!-- QUIZ -->
-    <div class="section-title"><span class="ico">🎯</span><h2>Quiz</h2></div>
-    <div class="cards row-4">
-      <div class="card stat"><div class="label">Quizzes completed</div><div class="num" id="quizDone">0<small>/0</small></div></div>
-      <div class="card stat"><div class="label">Problems solved</div><div class="num" id="problems">0<small>/0</small></div></div>
-      <div class="card stat"><div class="label">Time taken</div><div class="num" id="quizTime" style="font-size:1.4rem">—</div></div>
-      <div class="card stat"><div class="label">Points scored</div><div class="num" id="quizPoints">0</div></div>
-    </div>
-
-    <!-- GAME ARENA -->
-    <div class="section-title"><span class="ico">♟️</span><h2>Game Arena</h2></div>
-    <div class="cards row-2">
-      <div class="card">
-        <div class="game-grid">
-          <div>
-            <div class="stat" style="margin-bottom:14px"><div class="label">Games played</div><div class="num" id="games">0</div></div>
-            <div class="stat"><div class="label">Time spent playing</div><div class="num" id="gameTime" style="font-size:1.4rem">—</div></div>
-            <div class="legend">
-              <div><span class="dot" style="background:var(--green)"></span> Wins · <b id="wins">0</b> <span id="winPct" style="color:var(--ink-soft)"></span></div>
-              <div><span class="dot" style="background:var(--red)"></span> Losses · <b id="losses">0</b></div>
-              <div><span class="dot" style="background:var(--blue)"></span> Draws · <b id="draws">0</b></div>
+      <div class="section-title"><span class="ico">♟️</span><h2>Game Arena</h2></div>
+      <div class="cards row-2">
+        <div class="card">
+          <div class="game-grid">
+            <div>
+              <div class="stat" style="margin-bottom:14px"><div class="label">Games played</div><div class="num" id="games">0</div></div>
+              <div class="stat"><div class="label">Time spent playing</div><div class="num" id="gameTime" style="font-size:1.4rem">—</div></div>
+              <div class="legend">
+                <div><span class="dot" style="background:var(--green)"></span> Wins · <b id="wins">0</b> <span id="winPct" style="color:var(--ink-soft)"></span></div>
+                <div><span class="dot" style="background:var(--red)"></span> Losses · <b id="losses">0</b></div>
+                <div><span class="dot" style="background:var(--blue)"></span> Draws · <b id="draws">0</b></div>
+              </div>
             </div>
-          </div>
-          <div>
-            <div class="chart-box"><canvas id="wldChart"></canvas><div id="chartFallback" class="chart-fallback" style="display:none"></div></div>
+            <div><div class="chart-box"><canvas id="wldChart"></canvas><div id="chartFallback" class="chart-fallback" style="display:none"></div></div></div>
           </div>
         </div>
+        <div class="card">
+          <div class="section-title" style="margin:0 0 10px"><span class="ico">🏆</span><h2 style="font-size:1.1rem">Tournament</h2></div>
+          <div class="stat" style="margin-bottom:14px"><div class="label">Tournaments played</div><div class="num" id="tourPlayed">0</div></div>
+          <div class="stat"><div class="label">Best result</div><div class="num" id="tourBest" style="font-size:1.4rem">—</div></div>
+        </div>
       </div>
-      <div class="card">
-        <div class="section-title" style="margin:0 0 10px"><span class="ico">🏆</span><h2 style="font-size:1.1rem">Tournament</h2></div>
-        <div class="stat" style="margin-bottom:14px"><div class="label">Tournaments played</div><div class="num" id="tourPlayed">0</div></div>
-        <div class="stat"><div class="label">Best result</div><div class="num" id="tourBest" style="font-size:1.4rem">—</div></div>
-      </div>
-    </div>
 
-    <!-- COACH NOTES -->
-    <div class="section-title"><span class="ico">📝</span><h2>Coach's notes</h2></div>
-    <div class="card"><div class="notes" id="notes"><span class="empty">No notes yet.</span></div></div>
+      <div class="section-title"><span class="ico">📝</span><h2>Coach's notes</h2></div>
+      <div class="card"><div class="notes" id="notes"><span class="empty">No notes yet.</span></div></div>
+    </div>
   </div>
 </main>
+
+<!-- add-child modal -->
+<div class="modal" id="kidModal">
+  <div class="modal-card">
+    <h3>Add a child</h3>
+    <form id="kidForm">
+      <div class="f"><label for="kidName">Child's name</label><input id="kidName" type="text" required placeholder="e.g. Alex"></div>
+      <div class="f"><label for="kidLevel">Level</label>
+        <select id="kidLevel"><option value="">Select…</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+      <div class="modal-msg" id="kidMsg"></div>
+      <div class="modal-bar">
+        <button type="button" class="btn btn-outline btn-sm" id="kidCancel">Cancel</button>
+        <button type="submit" class="btn btn-gold btn-sm">Add child</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <footer>&copy; <span id="yr"></span> Philidor Chess Academy — Parent Portal</footer>
 
@@ -191,100 +230,127 @@
     var gate = byId('gate'), app = byId('app');
 
     var configured = window.SUPABASE_URL && window.SUPABASE_URL.indexOf('YOUR-PROJECT') === -1;
-    if (!configured || !window.supabase || !window.supabase.createClient){
-      window.location.href = 'parent-login.html'; return;
-    }
+    if (!configured || !window.supabase || !window.supabase.createClient){ window.location.href = 'parent-login.html'; return; }
     var client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
+    var USER = null, CHILDREN = [], ACTIVE = null, CHART = null;
     function txt(id, v){ var e = byId(id); if (e) e.textContent = (v===0||v) ? v : '—'; }
 
     client.auth.getSession().then(function (res){
       var session = res.data && res.data.session;
       if (!session){ window.location.href = 'parent-login.html'; return; }
-      var user = session.user;
+      USER = session.user;
 
-      // profile (name, child) + admin check + stats, in parallel
       Promise.all([
-        client.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-        client.from('admins').select('user_id').eq('user_id', user.id).maybeSingle(),
-        client.from('student_stats').select('*').eq('parent_id', user.id).maybeSingle()
+        client.from('profiles').select('*').eq('id', USER.id).maybeSingle(),
+        client.from('admins').select('user_id').eq('user_id', USER.id).maybeSingle()
       ]).then(function (out){
-        var profile = (out[0] && out[0].data) || user.user_metadata || {};
+        var profile = (out[0] && out[0].data) || USER.user_metadata || {};
         var isAdmin = !!(out[1] && out[1].data);
-        var s = out[2] && out[2].data;
-
         var first = (profile.full_name || '').split(' ')[0] || 'there';
         txt('parentName', first);
-        txt('childName', profile.child_name || 'your child');
-        if (profile.child_level){ var c = byId('levelChip'); c.textContent = profile.child_level; c.style.display='inline-flex'; }
         if (isAdmin) byId('adminLink').style.display = 'inline-block';
-
-        if (!s){
-          byId('stats').style.display = 'none';
-          byId('noData').style.display = 'block';
-        } else {
-          render(s);
-        }
-
-        gate.style.display = 'none';
-        app.style.display = 'block';
-      }).catch(function (e){
-        gate.textContent = 'Could not load dashboard: ' + (e.message || e);
-      });
+        gate.style.display = 'none'; app.style.display = 'block';
+        loadChildren();
+      }).catch(function (e){ gate.textContent = 'Could not load: ' + (e.message || e); });
     });
+
+    function loadChildren(){
+      client.from('children').select('*').eq('parent_id', USER.id).order('created_at').then(function (r){
+        CHILDREN = r.data || [];
+        renderKidbar();
+        if (!CHILDREN.length){
+          byId('noKids').style.display = 'block';
+          byId('stats').style.display = 'none';
+        } else {
+          byId('noKids').style.display = 'none';
+          byId('stats').style.display = 'block';
+          selectChild(ACTIVE && find(ACTIVE) ? ACTIVE : CHILDREN[0].id);
+        }
+      });
+    }
+    function find(id){ for (var i=0;i<CHILDREN.length;i++){ if (CHILDREN[i].id===id) return CHILDREN[i]; } return null; }
+
+    function renderKidbar(){
+      var bar = byId('kidbar'); bar.innerHTML = '';
+      CHILDREN.forEach(function (c){
+        var t = document.createElement('button');
+        t.className = 'kidtab' + (c.id===ACTIVE ? ' active' : '');
+        t.innerHTML = '<span>'+ esc(c.name) +'</span>' + (c.level ? '<span class="lvl">'+esc(c.level)+'</span>' : '');
+        t.addEventListener('click', function (){ selectChild(c.id); });
+        bar.appendChild(t);
+      });
+      var add = document.createElement('button');
+      add.className = 'addkid'; add.type='button'; add.textContent = '+ Add child';
+      add.addEventListener('click', openModal);
+      bar.appendChild(add);
+    }
+    function esc(s){ return s ? String(s).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];}) : ''; }
+
+    function selectChild(id){
+      ACTIVE = id; renderKidbar();
+      var child = find(id); if (!child) return;
+      client.from('student_stats').select('*').eq('child_id', id).maybeSingle().then(function (r){
+        var s = r.data;
+        if (!s){ byId('statBody').style.display='none'; byId('noData').style.display='block'; txt('ndName', child.name); byId('updated').textContent=''; }
+        else { byId('noData').style.display='none'; byId('statBody').style.display='block'; render(s); }
+      });
+    }
 
     function render(s){
       var pct = Math.max(0, Math.min(100, Number(s.attendance_pct)||0));
-      byId('attRing').style.setProperty('--pct', pct);
-      txt('attPct', pct + '%');
+      byId('attRing').style.setProperty('--pct', pct); txt('attPct', pct + '%');
       byId('classes').innerHTML = (s.classes_attended||0) + '<small>/' + (s.classes_total||0) + '</small>';
-      txt('hours', s.hours_in_classroom||0);
-      txt('lbPoints', s.leaderboard_points||0);
-
+      txt('hours', s.hours_in_classroom||0); txt('lbPoints', s.leaderboard_points||0);
       byId('quizDone').innerHTML = (s.quizzes_completed||0) + '<small>/' + (s.quizzes_total||0) + '</small>';
       byId('problems').innerHTML = (s.problems_solved||0) + '<small>/' + (s.problems_total||0) + '</small>';
-      txt('quizTime', s.quiz_time_taken||'—');
-      txt('quizPoints', s.quiz_points||0);
-
-      txt('games', s.games_played||0);
-      txt('gameTime', s.game_time||'—');
-      var w=s.wins||0, l=s.losses||0, d=s.draws||0, tot=w+l+d;
-      txt('wins', w); txt('losses', l); txt('draws', d);
-      if (tot>0) byId('winPct').textContent = '· ' + Math.round(w/tot*100) + '%';
-
-      txt('tourPlayed', s.tournaments_played||0);
-      txt('tourBest', s.tournament_best||'—');
-
+      txt('quizTime', s.quiz_time_taken||'—'); txt('quizPoints', s.quiz_points||0);
+      txt('games', s.games_played||0); txt('gameTime', s.game_time||'—');
+      var w=s.wins||0,l=s.losses||0,d=s.draws||0,tot=w+l+d;
+      txt('wins',w); txt('losses',l); txt('draws',d);
+      byId('winPct').textContent = tot>0 ? '· ' + Math.round(w/tot*100) + '%' : '';
+      txt('tourPlayed', s.tournaments_played||0); txt('tourBest', s.tournament_best||'—');
       var notes = byId('notes');
-      if (s.coach_notes && s.coach_notes.trim()) notes.textContent = s.coach_notes;
-
-      if (s.updated_at){
-        try { byId('updated').textContent = 'Last updated ' + new Date(s.updated_at).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); } catch(e){}
-      }
-
+      notes.textContent = (s.coach_notes && s.coach_notes.trim()) ? s.coach_notes : '';
+      if (!notes.textContent){ notes.innerHTML = '<span class="empty">No notes yet.</span>'; }
+      if (s.updated_at){ try { byId('updated').textContent = 'Updated ' + new Date(s.updated_at).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); } catch(e){} }
       drawChart(w,l,d);
     }
 
     function drawChart(w,l,d){
-      var tot=w+l+d;
-      var canvas = byId('wldChart');
+      var tot=w+l+d, canvas=byId('wldChart');
+      if (CHART){ CHART.destroy(); CHART=null; }
       if (!window.Chart || tot===0){
         if (canvas) canvas.style.display='none';
-        var fb = byId('chartFallback'); fb.style.display='block';
+        var fb=byId('chartFallback'); fb.style.display='block';
         fb.innerHTML = tot===0 ? '<span style="font-size:.9rem;color:#26314d">No games yet</span>' : (Math.round(w/tot*100)+'%<div style="font-size:.7rem;color:#26314d">win rate</div>');
         return;
       }
-      new Chart(canvas, {
-        type:'doughnut',
-        data:{ labels:['Wins','Losses','Draws'],
-          datasets:[{ data:[w,l,d], backgroundColor:['#2e9e6b','#d05a57','#5b8def'], borderWidth:0 }] },
-        options:{ cutout:'68%', plugins:{ legend:{display:false} }, responsive:true, maintainAspectRatio:false }
-      });
+      canvas.style.display='block'; byId('chartFallback').style.display='none';
+      CHART = new Chart(canvas, { type:'doughnut',
+        data:{ labels:['Wins','Losses','Draws'], datasets:[{ data:[w,l,d], backgroundColor:['#2e9e6b','#d05a57','#5b8def'], borderWidth:0 }] },
+        options:{ cutout:'68%', plugins:{legend:{display:false}}, responsive:true, maintainAspectRatio:false } });
     }
 
-    byId('signOut').addEventListener('click', function (){
-      client.auth.signOut().then(function (){ window.location.href = 'parent-login.html'; });
+    // ---- add-child modal ----
+    function openModal(){ byId('kidMsg').textContent=''; byId('kidForm').reset(); byId('kidModal').classList.add('open'); byId('kidName').focus(); }
+    function closeModal(){ byId('kidModal').classList.remove('open'); }
+    byId('kidCancel').addEventListener('click', closeModal);
+    byId('noKidsAdd').addEventListener('click', openModal);
+    byId('kidModal').addEventListener('click', function(e){ if (e.target===byId('kidModal')) closeModal(); });
+    byId('kidForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var name = byId('kidName').value.trim(); if (!name){ return; }
+      var btn = byId('kidForm').querySelector('button[type=submit]'); btn.disabled=true;
+      client.from('children').insert({ parent_id: USER.id, name: name, level: byId('kidLevel').value || null })
+        .select().single().then(function(r){
+          btn.disabled=false;
+          if (r.error){ byId('kidMsg').textContent = r.error.message; return; }
+          closeModal(); ACTIVE = r.data.id; loadChildren();
+        });
     });
+
+    byId('signOut').addEventListener('click', function (){ client.auth.signOut().then(function (){ window.location.href = 'parent-login.html'; }); });
   })();
 </script>
 </body>
