@@ -215,10 +215,10 @@
     </div>
   </div>
 
-  <!-- ===== SESSION MATERIAL (assigned to this parent / child) ===== -->
-  <div class="section-title"><span class="ico">📚</span><h2>Session material</h2></div>
-  <div class="cards" id="sessionMaterials" style="grid-template-columns:repeat(2,1fr)">
-    <div class="card"><span class="empty">No session material assigned yet.</span></div>
+  <!-- ===== TOPICS (assigned to this parent / child) ===== -->
+  <div class="section-title"><span class="ico">📚</span><h2>Your topics</h2></div>
+  <div id="topicsArea">
+    <div class="card"><span class="empty">No topics assigned yet.</span></div>
   </div>
 
   <!-- ===== OPEN REFERENCE MATERIALS (everyone) ===== -->
@@ -303,27 +303,38 @@
       });
     }
 
-    function loadSessionMaterials(){
-      // material mapped to this parent OR to the active child
-      var box = byId('sessionMaterials');
-      client.from('session_materials').select('*')
-        .or('parent_id.eq.' + USER.id + (ACTIVE ? (',child_id.eq.' + ACTIVE) : ''))
-        .order('created_at', { ascending:false }).then(function (r){
-          var rows = (r.data || []).filter(function(m){ return m.parent_id===USER.id || m.child_id===ACTIVE; });
-          if (!rows.length){ box.innerHTML = '<div class="card"><span class="empty">No session material assigned yet.</span></div>'; return; }
-          box.innerHTML = '';
-          rows.forEach(function(m){
-            var d = document.createElement('div'); d.className='card mat';
-            var link = m.storage_path
-              ? '<a class="open" href="#" data-path="'+esc2(m.storage_path)+'">Open material ↗</a>'
-              : '<a class="open" href="'+esc2(m.url)+'" target="_blank" rel="noopener">Open material ↗</a>';
-            d.innerHTML = (m.session_no?'<span class="pill">'+esc2(m.session_no)+'</span>':'') +
-              '<h4>'+esc2(m.title)+'</h4>' +
-              (m.description?'<p>'+esc2(m.description)+'</p>':'') + link;
-            var sg=d.querySelector('a[data-path]'); if (sg) sg.addEventListener('click', signedOpen);
-            box.appendChild(d);
+    // Topics visible to this parent for the ACTIVE child (RPC honors
+    // active-child scoping; parent-level + assign_all topics always show).
+    function loadTopics(){
+      var area = byId('topicsArea');
+      client.rpc('get_visible_topics', { p_child: ACTIVE || null }).then(function (r){
+        var topics = r.data || [];
+        if (!topics.length){ area.innerHTML = '<div class="card"><span class="empty">No topics assigned yet.</span></div>'; return; }
+        var ids = topics.map(function(t){ return t.id; });
+        client.from('topic_materials').select('*').in('topic_id', ids).order('sort_order').order('created_at').then(function (mr){
+          var byTopic = {}; (mr.data||[]).forEach(function(m){ (byTopic[m.topic_id]=byTopic[m.topic_id]||[]).push(m); });
+          area.innerHTML = '';
+          topics.forEach(function(t){
+            var head = document.createElement('div'); head.className='section-title'; head.style.margin='18px 0 10px';
+            head.innerHTML = '<span class="ico">📘</span><h2 style="font-size:1.15rem">'+esc2(t.name)+'</h2>';
+            area.appendChild(head);
+            if (t.description){ var desc=document.createElement('p'); desc.style.cssText='color:var(--ink-soft);margin:-4px 0 10px'; desc.textContent=t.description; area.appendChild(desc); }
+            var grid = document.createElement('div'); grid.className='cards'; grid.style.gridTemplateColumns='repeat(2,1fr)';
+            var mats = byTopic[t.id] || [];
+            if (!mats.length){ grid.innerHTML = '<div class="card"><span class="empty">No materials yet.</span></div>'; }
+            mats.forEach(function(m){
+              var d=document.createElement('div'); d.className='card mat';
+              var link = m.storage_path
+                ? '<a class="open" href="#" data-path="'+esc2(m.storage_path)+'">Open material ↗</a>'
+                : '<a class="open" href="'+esc2(m.url)+'" target="_blank" rel="noopener">Open material ↗</a>';
+              d.innerHTML = '<h4>'+esc2(m.title)+'</h4>'+(m.description?'<p>'+esc2(m.description)+'</p>':'')+link;
+              var sg=d.querySelector('a[data-path]'); if (sg) sg.addEventListener('click', signedOpen);
+              grid.appendChild(d);
+            });
+            area.appendChild(grid);
           });
         });
+      });
     }
 
     function loadOpenMaterials(){
@@ -371,7 +382,7 @@
         if (!CHILDREN.length){
           byId('noKids').style.display = 'block';
           byId('stats').style.display = 'none';
-          loadSessionMaterials();   // parent-mapped material still shows with no kids
+          loadTopics();   // parent-level / assign-all topics still show with no kids
         } else {
           byId('noKids').style.display = 'none';
           byId('stats').style.display = 'block';
@@ -400,7 +411,7 @@
     function selectChild(id){
       ACTIVE = id; renderKidbar();
       var child = find(id); if (!child) return;
-      loadSessionMaterials();
+      loadTopics();
       client.from('student_stats').select('*').eq('child_id', id).maybeSingle().then(function (r){
         var s = r.data;
         if (!s){ byId('statBody').style.display='none'; byId('noData').style.display='block'; txt('ndName', child.name); byId('updated').textContent=''; }
