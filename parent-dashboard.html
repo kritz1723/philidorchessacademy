@@ -286,6 +286,16 @@
 
     function esc2(s){ return s ? String(s).replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}) : ''; }
 
+    // Open a private uploaded file via a short-lived signed URL.
+    function signedOpen(e){
+      e.preventDefault();
+      var path = e.currentTarget.getAttribute('data-path');
+      client.storage.from('materials').createSignedUrl(path, 60).then(function(r){
+        if (r.data && r.data.signedUrl) window.open(r.data.signedUrl, '_blank', 'noopener');
+        else alert('Could not open file.');
+      });
+    }
+
     function loadSessionMaterials(){
       // material mapped to this parent OR to the active child
       var box = byId('sessionMaterials');
@@ -297,10 +307,13 @@
           box.innerHTML = '';
           rows.forEach(function(m){
             var d = document.createElement('div'); d.className='card mat';
+            var link = m.storage_path
+              ? '<a class="open" href="#" data-path="'+esc2(m.storage_path)+'">Open material ↗</a>'
+              : '<a class="open" href="'+esc2(m.url)+'" target="_blank" rel="noopener">Open material ↗</a>';
             d.innerHTML = (m.session_no?'<span class="pill">'+esc2(m.session_no)+'</span>':'') +
               '<h4>'+esc2(m.title)+'</h4>' +
-              (m.description?'<p>'+esc2(m.description)+'</p>':'') +
-              '<a class="open" href="'+esc2(m.url)+'" target="_blank" rel="noopener">Open material ↗</a>';
+              (m.description?'<p>'+esc2(m.description)+'</p>':'') + link;
+            var sg=d.querySelector('a[data-path]'); if (sg) sg.addEventListener('click', signedOpen);
             box.appendChild(d);
           });
         });
@@ -314,11 +327,13 @@
         box.innerHTML='';
         rows.forEach(function(m){
           var d=document.createElement('div'); d.className='card mat';
+          var olink = m.storage_path ? '<a class="open" href="#" data-path="'+esc2(m.storage_path)+'">View ↗</a>'
+                    : (m.url?'<a class="open" href="'+esc2(m.url)+'" target="_blank" rel="noopener">View ↗</a>':'');
           d.innerHTML='<span class="pill">'+esc2(m.kind||'Book')+'</span>'+
             '<h4>'+esc2(m.title)+'</h4>'+
             (m.author?'<p>by '+esc2(m.author)+'</p>':'')+
-            (m.description?'<p>'+esc2(m.description)+'</p>':'')+
-            (m.url?'<a class="open" href="'+esc2(m.url)+'" target="_blank" rel="noopener">View ↗</a>':'');
+            (m.description?'<p>'+esc2(m.description)+'</p>':'')+ olink;
+          var sg=d.querySelector('a[data-path]'); if (sg) sg.addEventListener('click', signedOpen);
           box.appendChild(d);
         });
       });

@@ -174,8 +174,9 @@
             <div class="f" style="margin-bottom:12px"><label>Title</label><input id="sm_title" type="text" required placeholder="e.g. Knight forks worksheet"></div>
             <div class="grid2">
               <div class="f"><label>Session label (optional)</label><input id="sm_session" type="text" placeholder="Session 4"></div>
-              <div class="f"><label>Link / page URL</label><input id="sm_url" type="text" required placeholder="material-session4.html or https://…"></div>
+              <div class="f"><label>Link / page URL (or upload below)</label><input id="sm_url" type="text" placeholder="materials/session4.html or https://…"></div>
             </div>
+            <div class="f" style="margin:12px 0"><label>…or upload a file (PDF, HTML, image)</label><input id="sm_file" type="file" accept=".pdf,.html,.htm,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx"></div>
             <div class="f" style="margin:12px 0"><label>Description (optional)</label><textarea id="sm_desc" rows="2"></textarea></div>
             <div class="grid2">
               <div class="f"><label>Assign to</label>
@@ -204,6 +205,7 @@
               <div class="f"><label>Type</label><select id="om_kind"><option>Book</option><option>Video</option><option>Article</option><option>Other</option></select></div>
             </div>
             <div class="f" style="margin:12px 0"><label>Link (optional)</label><input id="om_url" type="text" placeholder="https://…"></div>
+            <div class="f" style="margin-bottom:12px"><label>…or upload a file (PDF, image, etc.)</label><input id="om_file" type="file" accept=".pdf,.html,.htm,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx,.epub"></div>
             <div class="f" style="margin-bottom:12px"><label>Description (optional)</label><textarea id="om_desc" rows="2"></textarea></div>
             <div class="bar"><button class="btn btn-gold" type="submit">Add material</button><span class="msg" id="omMsg"></span></div>
           </form>
@@ -270,6 +272,16 @@
 
     function esc(s){ return s ? String(s).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];}) : ''; }
     function safeUrl(u){ u=String(u||'').trim(); if(/^https?:\/\//i.test(u)||/^[\w.\-\/]+\.html(\?.*)?(#.*)?$/i.test(u)) return u; return ''; }
+
+    // Upload a file to the private "materials" bucket; returns {path}.
+    function uploadFile(fileInput, folder){
+      var file = fileInput.files && fileInput.files[0];
+      if (!file) return Promise.resolve(null);
+      var clean = file.name.replace(/[^\w.\-]+/g,'_');
+      var path = folder + '/' + Date.now() + '_' + clean;
+      return client.storage.from('materials').upload(path, file, { upsert:false })
+        .then(function(r){ if (r.error) throw r.error; return { path:path }; });
+    }
 
     // ---- tabs ----
     Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(b){
@@ -395,19 +407,24 @@
     byId('smForm').addEventListener('submit', function(e){
       e.preventDefault();
       var msg=byId('smMsg'); msg.className='msg';
-      var url=safeUrl(byId('sm_url').value);
-      if (!url){ msg.textContent='Enter a valid http(s) link or a .html page path.'; msg.classList.add('err'); return; }
+      var typedUrl=byId('sm_url').value.trim();
+      var hasFile = byId('sm_file').files && byId('sm_file').files[0];
+      if (!typedUrl && !hasFile){ msg.textContent='Paste a link OR choose a file to upload.'; msg.classList.add('err'); return; }
+      if (typedUrl && !safeUrl(typedUrl)){ msg.textContent='Link must be http(s) or a .html page path.'; msg.classList.add('err'); return; }
       var type=byId('sm_target_type').value, target=byId('sm_target').value;
       if (!target){ msg.textContent='Choose a '+type+'.'; msg.classList.add('err'); return; }
-      var row={ title:byId('sm_title').value.trim(), description:byId('sm_desc').value.trim()||null,
-        url:url, session_no:byId('sm_session').value.trim()||null,
-        parent_id: type==='parent'?target:null, child_id: type==='child'?target:null };
-      var btn=byId('smForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent='Saving…';
-      client.from('session_materials').insert(row).then(function(r){
+      var btn=byId('smForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent= hasFile?'Uploading…':'Saving…';
+      uploadFile(byId('sm_file'), 'session').then(function(up){
+        var row={ title:byId('sm_title').value.trim(), description:byId('sm_desc').value.trim()||null,
+          url: up ? null : safeUrl(typedUrl), storage_path: up ? up.path : null,
+          session_no:byId('sm_session').value.trim()||null,
+          parent_id: type==='parent'?target:null, child_id: type==='child'?target:null };
+        return client.from('session_materials').insert(row);
+      }).then(function(r){
         btn.disabled=false;
         if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
         msg.textContent='✓ Added'; msg.className='msg ok'; byId('smForm').reset(); fillSessionTargets(); loadSessionMaterials();
-      });
+      }).catch(function(err){ btn.disabled=false; msg.textContent='Upload failed: '+(err.message||err); msg.classList.add('err'); });
     });
     byId('smRefresh').addEventListener('click', loadSessionMaterials);
     function loadSessionMaterials(){
@@ -419,10 +436,13 @@
           var who = m.parent_id ? ('Parent: '+esc((PARENTS[m.parent_id]||{}).full_name||'—'))
                   : ('Child: '+esc((childName(m.child_id))||'—'));
           var d=document.createElement('div'); d.className='itemrow';
+          var link = m.storage_path ? '<a href="#" data-path="'+esc(m.storage_path)+'" class="signed">open file ↗</a>'
+                                    : '<a href="'+esc(m.url)+'" target="_blank" rel="noopener">open ↗</a>';
           d.innerHTML='<div class="info"><b>'+(m.session_no?'<span class="pill">'+esc(m.session_no)+'</span>':'')+esc(m.title)+'</b>'+
-            '<span>'+who+' · <a href="'+esc(m.url)+'" target="_blank" rel="noopener">open ↗</a></span></div>'+
+            '<span>'+who+' · '+link+'</span></div>'+
             '<button class="btn btn-danger btn-xs" type="button">Delete</button>';
-          d.querySelector('button').addEventListener('click', function(){ delRow('session_materials', m.id, loadSessionMaterials); });
+          var sg=d.querySelector('a.signed'); if (sg) sg.addEventListener('click', signedOpen);
+          d.querySelector('button').addEventListener('click', function(){ delRow('session_materials', m.id, loadSessionMaterials, m.storage_path); });
           box.appendChild(d);
         });
       });
@@ -433,15 +453,21 @@
     byId('omForm').addEventListener('submit', function(e){
       e.preventDefault();
       var msg=byId('omMsg'); msg.className='msg';
-      var url=byId('om_url').value.trim(); if (url && !safeUrl(url)){ msg.textContent='Link must start with http(s).'; msg.classList.add('err'); return; }
-      var row={ title:byId('om_title').value.trim(), author:byId('om_author').value.trim()||null,
-        kind:byId('om_kind').value, url:url||null, description:byId('om_desc').value.trim()||null };
-      var btn=byId('omForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent='Saving…';
-      client.from('open_materials').insert(row).then(function(r){
+      var url=byId('om_url').value.trim();
+      if (url && !safeUrl(url)){ msg.textContent='Link must start with http(s).'; msg.classList.add('err'); return; }
+      var btn=byId('omForm').querySelector('button[type=submit]'); btn.disabled=true;
+      var hasFile = byId('om_file').files && byId('om_file').files[0];
+      msg.textContent = hasFile?'Uploading…':'Saving…'; msg.className='msg';
+      uploadFile(byId('om_file'), 'open').then(function(up){
+        var row={ title:byId('om_title').value.trim(), author:byId('om_author').value.trim()||null,
+          kind:byId('om_kind').value, url:url||null, storage_path: up?up.path:null,
+          description:byId('om_desc').value.trim()||null };
+        return client.from('open_materials').insert(row);
+      }).then(function(r){
         btn.disabled=false;
         if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
         msg.textContent='✓ Added'; msg.className='msg ok'; byId('omForm').reset(); loadOpen();
-      });
+      }).catch(function(err){ btn.disabled=false; msg.textContent='Upload failed: '+(err.message||err); msg.classList.add('err'); });
     });
     byId('omRefresh').addEventListener('click', loadOpen);
     function loadOpen(){
@@ -450,10 +476,13 @@
         if (!rows.length){ box.innerHTML='<div class="empty">No reference materials yet.</div>'; return; }
         rows.forEach(function(m){
           var d=document.createElement('div'); d.className='itemrow';
+          var link = m.storage_path ? ' · <a href="#" data-path="'+esc(m.storage_path)+'" class="signed">file ↗</a>'
+                   : (m.url?' · <a href="'+esc(m.url)+'" target="_blank" rel="noopener">link ↗</a>':'');
           d.innerHTML='<div class="info"><b><span class="pill">'+esc(m.kind||'Book')+'</span>'+esc(m.title)+'</b>'+
-            '<span>'+(m.author?esc(m.author):'')+(m.url?' · <a href="'+esc(m.url)+'" target="_blank" rel="noopener">link ↗</a>':'')+'</span></div>'+
+            '<span>'+(m.author?esc(m.author):'')+link+'</span></div>'+
             '<button class="btn btn-danger btn-xs" type="button">Delete</button>';
-          d.querySelector('button').addEventListener('click', function(){ delRow('open_materials', m.id, loadOpen); });
+          var sg=d.querySelector('a.signed'); if (sg) sg.addEventListener('click', signedOpen);
+          d.querySelector('button').addEventListener('click', function(){ delRow('open_materials', m.id, loadOpen, m.storage_path); });
           box.appendChild(d);
         });
       });
@@ -490,9 +519,23 @@
       });
     }
 
-    function delRow(table, id, then){
+    // Open an uploaded private file via a short-lived signed URL.
+    function signedOpen(e){
+      e.preventDefault();
+      var path = e.currentTarget.getAttribute('data-path');
+      client.storage.from('materials').createSignedUrl(path, 60).then(function(r){
+        if (r.data && r.data.signedUrl) window.open(r.data.signedUrl, '_blank', 'noopener');
+        else alert('Could not open file: ' + ((r.error&&r.error.message)||'unknown'));
+      });
+    }
+
+    function delRow(table, id, then, storagePath){
       if (!window.confirm('Delete this item?')) return;
-      client.from(table).delete().eq('id', id).then(function(r){ if (!r.error && then) then(); });
+      client.from(table).delete().eq('id', id).then(function(r){
+        if (r.error) return;
+        if (storagePath){ client.storage.from('materials').remove([storagePath]); }
+        if (then) then();
+      });
     }
 
     byId('signOut').addEventListener('click', function(){ client.auth.signOut().then(function(){ window.location.href='parent-login.html'; }); });
