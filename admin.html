@@ -199,8 +199,7 @@
                 <select id="tm_pick"><option value="">— Select from list —</option><option value="__custom__">Other (type a link)…</option></select></div>
               <div class="f" id="tm_url_wrap" style="display:none"><label>Custom link / page URL</label><input id="tm_url" type="text" placeholder="materials/session4.html or https://…"></div>
             </div>
-            <div class="f" style="margin:12px 0"><label>…or upload a file (private — PDF, HTML, image)</label><input id="tm_file" type="file" accept=".pdf,.html,.htm,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx"></div>
-            <div class="f" style="margin:12px 0"><label>…or publish a page to the website (commits to the repo, public link)</label><input id="tm_pubfile" type="file" accept=".html,.htm"><small style="display:block;margin-top:4px;color:#9aa3b8">Builds a public page on philidorchessacademy.in and adds it to the list. ~1 min to go live.</small></div>
+            <div class="f" style="margin:12px 0"><label>…or upload your material (private — PDF, HTML page, image)</label><input id="tm_file" type="file" accept=".pdf,.html,.htm,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx"><small style="display:block;margin-top:4px;color:#9aa3b8">Stored privately. Only parents you assign this topic to can open it, via a secure link. An uploaded .html opens as a page.</small></div>
             <div class="f" style="margin-bottom:12px"><label>Description (optional)</label><textarea id="tm_desc" rows="2"></textarea></div>
             <div class="bar"><button class="btn btn-gold" type="submit">Add material</button><span class="msg" id="tmMsg"></span></div>
           </form>
@@ -310,29 +309,6 @@
       var path = folder + '/' + Date.now() + '_' + clean;
       return client.storage.from('materials').upload(path, file, { upsert:false })
         .then(function(r){ if (r.error) throw r.error; return { path:path }; });
-    }
-
-    // Read a File as bare base64 (strips the "data:...;base64," prefix).
-    function fileToBase64(file){
-      return new Promise(function(resolve, reject){
-        var r = new FileReader();
-        r.onload = function(){ var s=String(r.result); var i=s.indexOf(','); resolve(i>=0 ? s.slice(i+1) : s); };
-        r.onerror = function(){ reject(r.error); };
-        r.readAsDataURL(file);
-      });
-    }
-
-    // Commit an HTML page to the repo via the publish-material Edge Function.
-    // Returns { url } (a site-relative path) or { error }.
-    function publishToRepo(file, title){
-      return fileToBase64(file).then(function(b64){
-        return client.functions.invoke('publish-material', { body:{ title:title, filename:file.name, contentBase64:b64 } });
-      }).then(function(res){
-        if (res.error){ return { error: (res.error.message || 'Request failed — is the function deployed?') }; }
-        var d = res.data || {};
-        if (!d.ok){ return { error: (d.error || 'Publish failed') + (d.detail ? ' — '+d.detail : '') }; }
-        return { url: d.url };
-      }).catch(function(e){ return { error: String(e && e.message || e) }; });
     }
 
     // ---- tabs ----
@@ -539,35 +515,17 @@
       var msg=byId('tmMsg'); msg.className='msg';
       var typedUrl=pickedUrl();
       var hasFile = byId('tm_file').files && byId('tm_file').files[0];
-      var pubFile = byId('tm_pubfile').files && byId('tm_pubfile').files[0];
-      if (!typedUrl && !hasFile && !pubFile){ msg.textContent='Pick a material, paste a link, upload a file, OR publish a page.'; msg.classList.add('err'); return; }
+      if (!typedUrl && !hasFile){ msg.textContent='Pick a material, paste a link, OR upload a file.'; msg.classList.add('err'); return; }
       if (typedUrl && !safeUrl(typedUrl)){ msg.textContent='Link must be http(s) or a .html page path.'; msg.classList.add('err'); return; }
-      var btn=byId('tmForm').querySelector('button[type=submit]'); btn.disabled=true;
-      var title=byId('tm_title').value.trim(), desc=byId('tm_desc').value.trim()||null;
-
-      function insertRow(row){
-        return client.from('topic_materials').insert(row).then(function(r){
-          btn.disabled=false;
-          if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
-          msg.textContent='✓ Added'; msg.className='msg ok'; byId('tmForm').reset(); byId('tm_url_wrap').style.display='none'; loadTopicMaterials();
-        });
-      }
-
-      // 1) Publish a page to the repo (highest priority if chosen).
-      if (pubFile){
-        msg.textContent='Publishing to the website…';
-        publishToRepo(pubFile, title).then(function(res){
-          if (res.error){ btn.disabled=false; msg.textContent='Publish failed: '+res.error; msg.classList.add('err'); return; }
-          insertRow({ topic_id:CURRENT_TOPIC.id, title:title, description:desc, url:res.url, storage_path:null });
-        });
-        return;
-      }
-
-      // 2) Private upload, or 3) a picked/typed link.
-      msg.textContent = hasFile ? 'Uploading…' : 'Saving…';
+      var btn=byId('tmForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent= hasFile?'Uploading…':'Saving…';
       uploadFile(byId('tm_file'), 'topics').then(function(up){
-        return insertRow({ topic_id:CURRENT_TOPIC.id, title:title, description:desc,
-          url: up ? null : safeUrl(typedUrl), storage_path: up ? up.path : null });
+        var row={ topic_id:CURRENT_TOPIC.id, title:byId('tm_title').value.trim(), description:byId('tm_desc').value.trim()||null,
+          url: up ? null : safeUrl(typedUrl), storage_path: up ? up.path : null };
+        return client.from('topic_materials').insert(row);
+      }).then(function(r){
+        btn.disabled=false;
+        if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
+        msg.textContent='✓ Added'; msg.className='msg ok'; byId('tmForm').reset(); byId('tm_url_wrap').style.display='none'; loadTopicMaterials();
       }).catch(function(err){ btn.disabled=false; msg.textContent='Upload failed: '+(err.message||err); msg.classList.add('err'); });
     });
 
