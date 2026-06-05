@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Manage Stats | Philidor Chess Academy</title>
+<title>Admin | Philidor Chess Academy</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,15 +25,24 @@
   nav{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;max-width:var(--maxw);margin:0 auto}
   .brand{font-family:"Fraunces";font-weight:600}
   .brand small{color:var(--gold);letter-spacing:.18em;text-transform:uppercase;font-size:.62rem;display:block}
-  .btn{font-weight:600;font-size:.86rem;padding:.55em 1.2em;border-radius:999px;cursor:pointer;border:none;transition:.2s}
+  .btn{font-weight:600;font-size:.86rem;padding:.55em 1.2em;border-radius:999px;cursor:pointer;border:none;transition:.2s;text-decoration:none;display:inline-block}
   .btn-line{background:transparent;border:1.5px solid var(--cream);color:var(--cream)}
   .btn-line:hover{background:var(--cream);color:var(--ink)}
   .btn-gold{background:var(--gold);color:var(--ink)}
   .btn-gold:hover{transform:translateY(-1px)}
   .btn-ghost{background:transparent;border:1.5px solid var(--gold);color:var(--gold)}
-  main{padding:28px 0 70px}
-  .layout{display:grid;grid-template-columns:300px 1fr;gap:22px}
+  .btn-danger{background:transparent;border:1.5px solid var(--danger);color:var(--danger)}
+  .btn-xs{font-size:.76rem;padding:.35em .8em}
+  main{padding:24px 0 70px}
+
+  /* top tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+  .tabs button{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:.55em 1.2em;font-weight:600;font-size:.9rem;cursor:pointer;color:var(--ink-soft);box-shadow:var(--shadow);transition:.18s}
+  .tabs button.active{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+  .tabpane{display:none} .tabpane.active{display:block}
+
   .panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+  .layout{display:grid;grid-template-columns:300px 1fr;gap:22px}
   .phead{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
   .phead h2{font-size:1.05rem}
   .plist{list-style:none;max-height:68vh;overflow:auto}
@@ -56,6 +65,17 @@
   .center .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:34px;max-width:440px}
   .hidden{display:none!important}
 
+  /* generic add-form card + item list (materials/products) */
+  .addcard{padding:20px}
+  .addcard h2{font-size:1.1rem;margin-bottom:14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .itemrow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .itemrow:last-child{border-bottom:none}
+  .itemrow .info b{display:block}
+  .itemrow .info span{font-size:.82rem;color:var(--ink-soft)}
+  .pill{display:inline-block;font-size:.7rem;font-weight:600;background:var(--cream-2);border-radius:999px;padding:.15em .7em;margin-right:6px}
+  .empty{color:var(--ink-soft);font-style:italic;padding:16px 18px}
+
   /* modal */
   .modal{position:fixed;inset:0;background:rgba(12,19,34,.5);display:none;align-items:center;justify-content:center;z-index:120;padding:20px}
   .modal.open{display:flex}
@@ -64,14 +84,14 @@
   .modal-bar{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
   .modal-msg{font-size:.85rem;color:var(--danger);min-height:1.1em}
 
-  @media (max-width:820px){ .layout{grid-template-columns:1fr} .fields{grid-template-columns:1fr 1fr} }
+  @media (max-width:820px){ .layout{grid-template-columns:1fr} .fields,.grid2{grid-template-columns:1fr 1fr} }
 </style>
 </head>
 <body>
 
 <header>
   <nav>
-    <div class="brand">Philidor Admin<small>Manage student stats</small></div>
+    <div class="brand">Philidor Admin<small>Manage portal content</small></div>
     <div style="display:flex;gap:10px">
       <a class="btn btn-line" href="parent-dashboard.html">Dashboard</a>
       <button id="signOut" class="btn btn-line" type="button">Sign out</button>
@@ -84,71 +104,143 @@
 
   <div id="denied" class="center hidden"><div class="card">
     <h2>Not authorized</h2>
-    <p style="color:var(--ink-soft);margin-top:8px">This account is not an admin. Sign in with an admin account, or ask for admin access.</p>
+    <p style="color:var(--ink-soft);margin-top:8px">This account is not an admin.</p>
     <p style="margin-top:16px"><a class="btn btn-gold" href="parent-login.html">Go to login</a></p>
   </div></div>
 
   <div id="admin" class="hidden">
-    <div class="layout">
-      <aside class="panel">
-        <div class="phead"><h2>Children</h2><button class="btn btn-ghost" id="addChildBtn" type="button">+ Add</button></div>
-        <ul class="plist" id="clist"></ul>
-      </aside>
+    <div class="tabs">
+      <button data-tab="stats" class="active">Student Stats</button>
+      <button data-tab="session">Session Material</button>
+      <button data-tab="open">Open Reference Materials</button>
+      <button data-tab="products">Products</button>
+    </div>
 
-      <section class="panel">
-        <div id="noSel" class="form"><p style="color:var(--ink-soft)">← Select a child to edit their stats, or <b>+ Add</b> a new child and assign them to a parent.</p></div>
+    <!-- ================= STATS ================= -->
+    <div id="tab-stats" class="tabpane active">
+      <div class="layout">
+        <aside class="panel">
+          <div class="phead"><h2>Children</h2><button class="btn btn-ghost btn-xs" id="addChildBtn" type="button">+ Add</button></div>
+          <ul class="plist" id="clist"></ul>
+        </aside>
+        <section class="panel">
+          <div id="noSel" class="form"><p style="color:var(--ink-soft)">← Select a child to edit stats, or <b>+ Add</b> a child and assign to a parent.</p></div>
+          <form id="form" class="form hidden">
+            <h2 id="editingFor" style="font-size:1.2rem"></h2>
+            <div class="grp">Classroom</div>
+            <div class="fields">
+              <div class="f"><label>Attendance %</label><input type="number" id="attendance_pct" min="0" max="100"></div>
+              <div class="f"><label>Classes attended</label><input type="number" id="classes_attended" min="0"></div>
+              <div class="f"><label>Classes total</label><input type="number" id="classes_total" min="0"></div>
+              <div class="f"><label>Hours in classroom</label><input type="number" id="hours_in_classroom" min="0" step="0.5"></div>
+              <div class="f"><label>Leaderboard points</label><input type="number" id="leaderboard_points" min="0"></div>
+            </div>
+            <div class="grp">Quiz</div>
+            <div class="fields">
+              <div class="f"><label>Quizzes completed</label><input type="number" id="quizzes_completed" min="0"></div>
+              <div class="f"><label>Quizzes total</label><input type="number" id="quizzes_total" min="0"></div>
+              <div class="f"><label>Problems solved</label><input type="number" id="problems_solved" min="0"></div>
+              <div class="f"><label>Problems total</label><input type="number" id="problems_total" min="0"></div>
+              <div class="f"><label>Time taken</label><input type="text" id="quiz_time_taken"></div>
+              <div class="f"><label>Points scored</label><input type="number" id="quiz_points" min="0"></div>
+            </div>
+            <div class="grp">Game Arena</div>
+            <div class="fields">
+              <div class="f"><label>Games played</label><input type="number" id="games_played" min="0"></div>
+              <div class="f"><label>Time spent</label><input type="text" id="game_time"></div>
+              <div class="f"><label>Wins</label><input type="number" id="wins" min="0"></div>
+              <div class="f"><label>Losses</label><input type="number" id="losses" min="0"></div>
+              <div class="f"><label>Draws</label><input type="number" id="draws" min="0"></div>
+            </div>
+            <div class="grp">Tournament</div>
+            <div class="fields">
+              <div class="f"><label>Tournaments played</label><input type="number" id="tournaments_played" min="0"></div>
+              <div class="f"><label>Best result</label><input type="text" id="tournament_best"></div>
+            </div>
+            <div class="grp">Coach's notes</div>
+            <div class="fields"><div class="f full"><textarea id="coach_notes" rows="3"></textarea></div></div>
+            <div class="bar"><button class="btn btn-gold" type="submit">Save changes</button><span class="msg" id="msg"></span></div>
+          </form>
+        </section>
+      </div>
+    </div>
 
-        <form id="form" class="form hidden">
-          <h2 id="editingFor" style="padding:0;border:0;font-size:1.2rem"></h2>
+    <!-- ================= SESSION MATERIAL ================= -->
+    <div id="tab-session" class="tabpane">
+      <div class="layout">
+        <section class="panel addcard">
+          <h2>Add session material</h2>
+          <form id="smForm">
+            <div class="f" style="margin-bottom:12px"><label>Title</label><input id="sm_title" type="text" required placeholder="e.g. Knight forks worksheet"></div>
+            <div class="grid2">
+              <div class="f"><label>Session label (optional)</label><input id="sm_session" type="text" placeholder="Session 4"></div>
+              <div class="f"><label>Link / page URL</label><input id="sm_url" type="text" required placeholder="material-session4.html or https://…"></div>
+            </div>
+            <div class="f" style="margin:12px 0"><label>Description (optional)</label><textarea id="sm_desc" rows="2"></textarea></div>
+            <div class="grid2">
+              <div class="f"><label>Assign to</label>
+                <select id="sm_target_type"><option value="parent">A parent (all their kids)</option><option value="child">A specific child</option></select></div>
+              <div class="f"><label>Choose</label><select id="sm_target"></select></div>
+            </div>
+            <div class="bar"><button class="btn btn-gold" type="submit">Add material</button><span class="msg" id="smMsg"></span></div>
+          </form>
+        </section>
+        <aside class="panel">
+          <div class="phead"><h2>Assigned material</h2><button class="btn btn-ghost btn-xs" id="smRefresh" type="button">Refresh</button></div>
+          <div id="smList"></div>
+        </aside>
+      </div>
+    </div>
 
-          <div class="grp">Classroom</div>
-          <div class="fields">
-            <div class="f"><label>Attendance %</label><input type="number" id="attendance_pct" min="0" max="100" step="1"></div>
-            <div class="f"><label>Classes attended</label><input type="number" id="classes_attended" min="0"></div>
-            <div class="f"><label>Classes total</label><input type="number" id="classes_total" min="0"></div>
-            <div class="f"><label>Hours in classroom</label><input type="number" id="hours_in_classroom" min="0" step="0.5"></div>
-            <div class="f"><label>Leaderboard points</label><input type="number" id="leaderboard_points" min="0"></div>
-          </div>
+    <!-- ================= OPEN MATERIALS ================= -->
+    <div id="tab-open" class="tabpane">
+      <div class="layout">
+        <section class="panel addcard">
+          <h2>Add open reference material</h2>
+          <form id="omForm">
+            <div class="f" style="margin-bottom:12px"><label>Title</label><input id="om_title" type="text" required placeholder="e.g. Logical Chess: Move by Move"></div>
+            <div class="grid2">
+              <div class="f"><label>Author (optional)</label><input id="om_author" type="text" placeholder="Irving Chernev"></div>
+              <div class="f"><label>Type</label><select id="om_kind"><option>Book</option><option>Video</option><option>Article</option><option>Other</option></select></div>
+            </div>
+            <div class="f" style="margin:12px 0"><label>Link (optional)</label><input id="om_url" type="text" placeholder="https://…"></div>
+            <div class="f" style="margin-bottom:12px"><label>Description (optional)</label><textarea id="om_desc" rows="2"></textarea></div>
+            <div class="bar"><button class="btn btn-gold" type="submit">Add material</button><span class="msg" id="omMsg"></span></div>
+          </form>
+        </section>
+        <aside class="panel">
+          <div class="phead"><h2>Reference list</h2><button class="btn btn-ghost btn-xs" id="omRefresh" type="button">Refresh</button></div>
+          <div id="omList"></div>
+        </aside>
+      </div>
+    </div>
 
-          <div class="grp">Quiz</div>
-          <div class="fields">
-            <div class="f"><label>Quizzes completed</label><input type="number" id="quizzes_completed" min="0"></div>
-            <div class="f"><label>Quizzes total</label><input type="number" id="quizzes_total" min="0"></div>
-            <div class="f"><label>Problems solved</label><input type="number" id="problems_solved" min="0"></div>
-            <div class="f"><label>Problems total</label><input type="number" id="problems_total" min="0"></div>
-            <div class="f"><label>Time taken (e.g. 12m 30s)</label><input type="text" id="quiz_time_taken"></div>
-            <div class="f"><label>Points scored</label><input type="number" id="quiz_points" min="0"></div>
-          </div>
-
-          <div class="grp">Game Arena</div>
-          <div class="fields">
-            <div class="f"><label>Games played</label><input type="number" id="games_played" min="0"></div>
-            <div class="f"><label>Time spent (e.g. 5m 10s)</label><input type="text" id="game_time"></div>
-            <div class="f"><label>Wins</label><input type="number" id="wins" min="0"></div>
-            <div class="f"><label>Losses</label><input type="number" id="losses" min="0"></div>
-            <div class="f"><label>Draws</label><input type="number" id="draws" min="0"></div>
-          </div>
-
-          <div class="grp">Tournament</div>
-          <div class="fields">
-            <div class="f"><label>Tournaments played</label><input type="number" id="tournaments_played" min="0"></div>
-            <div class="f"><label>Best result (e.g. 2nd place)</label><input type="text" id="tournament_best"></div>
-          </div>
-
-          <div class="grp">Coach's notes</div>
-          <div class="fields"><div class="f full"><textarea id="coach_notes" rows="3" placeholder="Optional notes shown to the parent…"></textarea></div></div>
-
-          <div class="bar">
-            <button class="btn btn-gold" type="submit">Save changes</button>
-            <span class="msg" id="msg"></span>
-          </div>
-        </form>
-      </section>
+    <!-- ================= PRODUCTS ================= -->
+    <div id="tab-products" class="tabpane">
+      <div class="layout">
+        <section class="panel addcard">
+          <h2>Add product</h2>
+          <form id="prForm">
+            <div class="f" style="margin-bottom:12px"><label>Title</label><input id="pr_title" type="text" required placeholder="e.g. Wooden Tournament Chess Set"></div>
+            <div class="grid2">
+              <div class="f"><label>Price (optional)</label><input id="pr_price" type="text" placeholder="₹1,299"></div>
+              <div class="f"><label>Amazon / buy link</label><input id="pr_buy" type="text" required placeholder="https://amazon.in/…"></div>
+            </div>
+            <div class="f" style="margin:12px 0"><label>Image URL (optional)</label><input id="pr_img" type="text" placeholder="https://…/image.jpg"></div>
+            <div class="f" style="margin-bottom:12px"><label>Description (optional)</label><textarea id="pr_desc" rows="2"></textarea></div>
+            <div class="bar"><button class="btn btn-gold" type="submit">Add product</button><span class="msg" id="prMsg"></span></div>
+          </form>
+        </section>
+        <aside class="panel">
+          <div class="phead"><h2>Products</h2><button class="btn btn-ghost btn-xs" id="prRefresh" type="button">Refresh</button></div>
+          <div id="prList"></div>
+        </aside>
+      </div>
     </div>
   </div>
 </main>
 
-<!-- add-child modal (admin assigns to a parent) -->
+<!-- add-child modal -->
 <div class="modal" id="childModal">
   <div class="modal-card">
     <h3>Add a child</h3>
@@ -172,19 +264,23 @@
 <script>
   (function () {
     var byId = function(id){ return document.getElementById(id); };
-    var NUM = ['attendance_pct','classes_attended','classes_total','hours_in_classroom','leaderboard_points',
-      'quizzes_completed','quizzes_total','problems_solved','problems_total','quiz_points',
-      'games_played','wins','losses','draws','tournaments_played'];
-    var TXT = ['quiz_time_taken','game_time','tournament_best','coach_notes'];
-    var ALL = NUM.concat(TXT);
-
     var configured = window.SUPABASE_URL && window.SUPABASE_URL.indexOf('YOUR-PROJECT') === -1;
     if (!configured || !window.supabase || !window.supabase.createClient){ window.location.href='parent-login.html'; return; }
     var client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-    var selected = null;        // selected child row
-    var PARENTS = {};           // id -> profile
+    function esc(s){ return s ? String(s).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];}) : ''; }
+    function safeUrl(u){ u=String(u||'').trim(); if(/^https?:\/\//i.test(u)||/^[\w.\-\/]+\.html(\?.*)?(#.*)?$/i.test(u)) return u; return ''; }
 
+    // ---- tabs ----
+    Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(b){
+      b.addEventListener('click', function(){
+        Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(x){ x.classList.remove('active'); });
+        Array.prototype.forEach.call(document.querySelectorAll('.tabpane'), function(x){ x.classList.remove('active'); });
+        b.classList.add('active'); byId('tab-'+b.dataset.tab).classList.add('active');
+      });
+    });
+
+    // ---- auth/admin gate ----
     client.auth.getSession().then(function(res){
       var session = res.data && res.data.session;
       if (!session){ window.location.href='parent-login.html'; return; }
@@ -192,21 +288,37 @@
         byId('gate').classList.add('hidden');
         if (!(a && a.data)){ byId('denied').classList.remove('hidden'); return; }
         byId('admin').classList.remove('hidden');
-        loadParents(loadChildren);
+        init();
       });
     });
 
-    function esc(s){ return s ? String(s).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];}) : ''; }
+    var PARENTS = {}, CHILDREN = [];
+
+    function init(){
+      loadParents(function(){
+        loadChildren();
+        fillSessionTargets();
+        loadSessionMaterials();
+        loadOpen();
+        loadProducts();
+      });
+    }
+
+    // ============ STATS ============
+    var NUM = ['attendance_pct','classes_attended','classes_total','hours_in_classroom','leaderboard_points',
+      'quizzes_completed','quizzes_total','problems_solved','problems_total','quiz_points',
+      'games_played','wins','losses','draws','tournaments_played'];
+    var TXT = ['quiz_time_taken','game_time','tournament_best','coach_notes'];
+    var ALL = NUM.concat(TXT);
+    var selectedChild = null;
 
     function loadParents(then){
-      client.from('profiles').select('id,full_name,child_name').order('full_name').then(function(r){
+      client.from('profiles').select('id,full_name').order('full_name').then(function(r){
         PARENTS = {};
         var sel = byId('c_parent'); sel.innerHTML = '<option value="">Select a parent…</option>';
         (r.data||[]).forEach(function(p){
-          PARENTS[p.id] = p;
-          var o = document.createElement('option'); o.value = p.id;
-          o.textContent = (p.full_name || '(no name)');
-          sel.appendChild(o);
+          PARENTS[p.id]=p;
+          var o=document.createElement('option'); o.value=p.id; o.textContent=p.full_name||'(no name)'; sel.appendChild(o);
         });
         if (then) then();
       });
@@ -214,49 +326,45 @@
 
     function loadChildren(){
       client.from('children').select('id,parent_id,name,level').order('name').then(function(r){
-        var list = byId('clist'); list.innerHTML = '';
-        var rows = r.data || [];
-        if (!rows.length){ list.innerHTML = '<li style="cursor:default"><span>No children yet. Click + Add.</span></li>'; return; }
-        rows.forEach(function(c){
-          var parent = PARENTS[c.parent_id];
-          var li = document.createElement('li');
-          li.innerHTML = '<b>'+ esc(c.name) +'</b><span>'+ (c.level?esc(c.level)+' · ':'') +
-            'Parent: '+ esc(parent ? (parent.full_name||'(no name)') : '—') +'</span>';
-          li.addEventListener('click', function(){ select(c, li); });
+        CHILDREN = r.data || [];
+        var list = byId('clist'); list.innerHTML='';
+        if (!CHILDREN.length){ list.innerHTML='<li style="cursor:default"><span>No children yet. Click + Add.</span></li>'; }
+        CHILDREN.forEach(function(c){
+          var parent=PARENTS[c.parent_id];
+          var li=document.createElement('li');
+          li.innerHTML='<b>'+esc(c.name)+'</b><span>'+(c.level?esc(c.level)+' · ':'')+'Parent: '+esc(parent?(parent.full_name||'(no name)'):'—')+'</span>';
+          li.addEventListener('click', function(){ selectChild(c, li); });
           list.appendChild(li);
         });
+        fillSessionTargets();
       });
     }
 
-    function select(c, li){
-      selected = c;
-      Array.prototype.forEach.call(document.querySelectorAll('.plist li'), function(x){ x.classList.remove('active'); });
+    function selectChild(c, li){
+      selectedChild = c;
+      Array.prototype.forEach.call(document.querySelectorAll('#clist li'), function(x){ x.classList.remove('active'); });
       li.classList.add('active');
-      byId('noSel').classList.add('hidden');
-      byId('form').classList.remove('hidden');
-      byId('editingFor').textContent = 'Editing: ' + c.name;
-      byId('msg').textContent='';
+      byId('noSel').classList.add('hidden'); byId('form').classList.remove('hidden');
+      byId('editingFor').textContent='Editing: '+c.name; byId('msg').textContent='';
       ALL.forEach(function(k){ byId(k).value=''; });
       client.from('student_stats').select('*').eq('child_id', c.id).maybeSingle().then(function(r){
-        var s = r.data;
-        if (s) ALL.forEach(function(k){ if (s[k]!==null && s[k]!==undefined) byId(k).value = s[k]; });
+        var s=r.data; if (s) ALL.forEach(function(k){ if (s[k]!==null&&s[k]!==undefined) byId(k).value=s[k]; });
       });
     }
 
     byId('form').addEventListener('submit', function(e){
-      e.preventDefault();
-      if (!selected) return;
-      var msg = byId('msg'); msg.textContent='Saving…'; msg.className='msg';
-      var payload = { child_id: selected.id, updated_at: new Date().toISOString() };
-      NUM.forEach(function(k){ payload[k] = byId(k).value==='' ? 0 : Number(byId(k).value); });
-      TXT.forEach(function(k){ payload[k] = byId(k).value; });
-      client.from('student_stats').upsert(payload, { onConflict:'child_id' }).then(function(r){
+      e.preventDefault(); if (!selectedChild) return;
+      var msg=byId('msg'); msg.textContent='Saving…'; msg.className='msg';
+      var p={ child_id:selectedChild.id, updated_at:new Date().toISOString() };
+      NUM.forEach(function(k){ p[k]= byId(k).value===''?0:Number(byId(k).value); });
+      TXT.forEach(function(k){ p[k]=byId(k).value; });
+      client.from('student_stats').upsert(p,{onConflict:'child_id'}).then(function(r){
         if (r.error){ msg.textContent='Error: '+r.error.message; msg.className='msg err'; }
         else { msg.textContent='✓ Saved'; msg.className='msg ok'; }
       });
     });
 
-    // ---- add child modal ----
+    // add-child modal
     function openChild(){ byId('childMsg').textContent=''; byId('childForm').reset(); byId('childModal').classList.add('open'); }
     function closeChild(){ byId('childModal').classList.remove('open'); }
     byId('addChildBtn').addEventListener('click', openChild);
@@ -264,16 +372,128 @@
     byId('childModal').addEventListener('click', function(e){ if (e.target===byId('childModal')) closeChild(); });
     byId('childForm').addEventListener('submit', function(e){
       e.preventDefault();
-      var name = byId('c_name').value.trim(), parent = byId('c_parent').value;
-      if (!name || !parent){ byId('childMsg').textContent='Name and parent are required.'; return; }
-      var btn = byId('childForm').querySelector('button[type=submit]'); btn.disabled=true;
-      client.from('children').insert({ parent_id: parent, name: name, level: byId('c_level').value || null })
-        .then(function(r){
-          btn.disabled=false;
-          if (r.error){ byId('childMsg').textContent=r.error.message; return; }
-          closeChild(); loadChildren();
-        });
+      var name=byId('c_name').value.trim(), parent=byId('c_parent').value;
+      if (!name||!parent){ byId('childMsg').textContent='Name and parent are required.'; return; }
+      var btn=byId('childForm').querySelector('button[type=submit]'); btn.disabled=true;
+      client.from('children').insert({parent_id:parent,name:name,level:byId('c_level').value||null}).then(function(r){
+        btn.disabled=false;
+        if (r.error){ byId('childMsg').textContent=r.error.message; return; }
+        closeChild(); loadChildren();
+      });
     });
+
+    // ============ SESSION MATERIAL ============
+    byId('sm_target_type').addEventListener('change', fillSessionTargets);
+    function fillSessionTargets(){
+      var type = byId('sm_target_type').value, sel = byId('sm_target'); sel.innerHTML='';
+      if (type==='parent'){
+        Object.keys(PARENTS).forEach(function(id){ var o=document.createElement('option'); o.value=id; o.textContent=PARENTS[id].full_name||'(no name)'; sel.appendChild(o); });
+      } else {
+        CHILDREN.forEach(function(c){ var par=PARENTS[c.parent_id]; var o=document.createElement('option'); o.value=c.id; o.textContent=c.name+(par?' ('+(par.full_name||'')+')':''); sel.appendChild(o); });
+      }
+    }
+    byId('smForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var msg=byId('smMsg'); msg.className='msg';
+      var url=safeUrl(byId('sm_url').value);
+      if (!url){ msg.textContent='Enter a valid http(s) link or a .html page path.'; msg.classList.add('err'); return; }
+      var type=byId('sm_target_type').value, target=byId('sm_target').value;
+      if (!target){ msg.textContent='Choose a '+type+'.'; msg.classList.add('err'); return; }
+      var row={ title:byId('sm_title').value.trim(), description:byId('sm_desc').value.trim()||null,
+        url:url, session_no:byId('sm_session').value.trim()||null,
+        parent_id: type==='parent'?target:null, child_id: type==='child'?target:null };
+      var btn=byId('smForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent='Saving…';
+      client.from('session_materials').insert(row).then(function(r){
+        btn.disabled=false;
+        if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
+        msg.textContent='✓ Added'; msg.className='msg ok'; byId('smForm').reset(); fillSessionTargets(); loadSessionMaterials();
+      });
+    });
+    byId('smRefresh').addEventListener('click', loadSessionMaterials);
+    function loadSessionMaterials(){
+      client.from('session_materials').select('*').order('created_at',{ascending:false}).then(function(r){
+        var box=byId('smList'); box.innerHTML='';
+        var rows=r.data||[];
+        if (!rows.length){ box.innerHTML='<div class="empty">No session material yet.</div>'; return; }
+        rows.forEach(function(m){
+          var who = m.parent_id ? ('Parent: '+esc((PARENTS[m.parent_id]||{}).full_name||'—'))
+                  : ('Child: '+esc((childName(m.child_id))||'—'));
+          var d=document.createElement('div'); d.className='itemrow';
+          d.innerHTML='<div class="info"><b>'+(m.session_no?'<span class="pill">'+esc(m.session_no)+'</span>':'')+esc(m.title)+'</b>'+
+            '<span>'+who+' · <a href="'+esc(m.url)+'" target="_blank" rel="noopener">open ↗</a></span></div>'+
+            '<button class="btn btn-danger btn-xs" type="button">Delete</button>';
+          d.querySelector('button').addEventListener('click', function(){ delRow('session_materials', m.id, loadSessionMaterials); });
+          box.appendChild(d);
+        });
+      });
+    }
+    function childName(id){ for (var i=0;i<CHILDREN.length;i++){ if (CHILDREN[i].id===id) return CHILDREN[i].name; } return null; }
+
+    // ============ OPEN MATERIALS ============
+    byId('omForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var msg=byId('omMsg'); msg.className='msg';
+      var url=byId('om_url').value.trim(); if (url && !safeUrl(url)){ msg.textContent='Link must start with http(s).'; msg.classList.add('err'); return; }
+      var row={ title:byId('om_title').value.trim(), author:byId('om_author').value.trim()||null,
+        kind:byId('om_kind').value, url:url||null, description:byId('om_desc').value.trim()||null };
+      var btn=byId('omForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent='Saving…';
+      client.from('open_materials').insert(row).then(function(r){
+        btn.disabled=false;
+        if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
+        msg.textContent='✓ Added'; msg.className='msg ok'; byId('omForm').reset(); loadOpen();
+      });
+    });
+    byId('omRefresh').addEventListener('click', loadOpen);
+    function loadOpen(){
+      client.from('open_materials').select('*').order('created_at',{ascending:false}).then(function(r){
+        var box=byId('omList'); box.innerHTML=''; var rows=r.data||[];
+        if (!rows.length){ box.innerHTML='<div class="empty">No reference materials yet.</div>'; return; }
+        rows.forEach(function(m){
+          var d=document.createElement('div'); d.className='itemrow';
+          d.innerHTML='<div class="info"><b><span class="pill">'+esc(m.kind||'Book')+'</span>'+esc(m.title)+'</b>'+
+            '<span>'+(m.author?esc(m.author):'')+(m.url?' · <a href="'+esc(m.url)+'" target="_blank" rel="noopener">link ↗</a>':'')+'</span></div>'+
+            '<button class="btn btn-danger btn-xs" type="button">Delete</button>';
+          d.querySelector('button').addEventListener('click', function(){ delRow('open_materials', m.id, loadOpen); });
+          box.appendChild(d);
+        });
+      });
+    }
+
+    // ============ PRODUCTS ============
+    byId('prForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var msg=byId('prMsg'); msg.className='msg';
+      var buy=safeUrl(byId('pr_buy').value); if (!buy){ msg.textContent='Buy link must start with http(s).'; msg.classList.add('err'); return; }
+      var img=byId('pr_img').value.trim(); if (img && !safeUrl(img)){ msg.textContent='Image URL must start with http(s).'; msg.classList.add('err'); return; }
+      var row={ title:byId('pr_title').value.trim(), price:byId('pr_price').value.trim()||null,
+        buy_url:buy, image_url:img||null, description:byId('pr_desc').value.trim()||null };
+      var btn=byId('prForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent='Saving…';
+      client.from('products').insert(row).then(function(r){
+        btn.disabled=false;
+        if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
+        msg.textContent='✓ Added'; msg.className='msg ok'; byId('prForm').reset(); loadProducts();
+      });
+    });
+    byId('prRefresh').addEventListener('click', loadProducts);
+    function loadProducts(){
+      client.from('products').select('*').order('created_at',{ascending:false}).then(function(r){
+        var box=byId('prList'); box.innerHTML=''; var rows=r.data||[];
+        if (!rows.length){ box.innerHTML='<div class="empty">No products yet.</div>'; return; }
+        rows.forEach(function(p){
+          var d=document.createElement('div'); d.className='itemrow';
+          d.innerHTML='<div class="info"><b>'+esc(p.title)+'</b><span>'+(p.price?esc(p.price)+' · ':'')+
+            '<a href="'+esc(p.buy_url)+'" target="_blank" rel="noopener">buy ↗</a></span></div>'+
+            '<button class="btn btn-danger btn-xs" type="button">Delete</button>';
+          d.querySelector('button').addEventListener('click', function(){ delRow('products', p.id, loadProducts); });
+          box.appendChild(d);
+        });
+      });
+    }
+
+    function delRow(table, id, then){
+      if (!window.confirm('Delete this item?')) return;
+      client.from(table).delete().eq('id', id).then(function(r){ if (!r.error && then) then(); });
+    }
 
     byId('signOut').addEventListener('click', function(){ client.auth.signOut().then(function(){ window.location.href='parent-login.html'; }); });
   })();

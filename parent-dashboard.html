@@ -88,6 +88,15 @@
   .notes{white-space:pre-wrap;color:var(--ink-soft)}
   .empty{color:var(--ink-soft);font-style:italic}
 
+  /* material / product cards */
+  .mat{display:flex;flex-direction:column;gap:8px}
+  .mat .pill{display:inline-block;align-self:flex-start;font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--mint);color:var(--ink);border-radius:999px;padding:.2em .7em}
+  .mat h4{font-size:1.05rem}
+  .mat p{font-size:.86rem;color:var(--ink-soft)}
+  .mat a.open{margin-top:auto;align-self:flex-start;font-weight:600;color:var(--gold)}
+  .prod img{width:100%;height:130px;object-fit:cover;border-radius:12px;background:var(--cream-2);margin-bottom:10px}
+  .prod .price{font-family:"Fraunces";font-weight:600}
+
   /* modal */
   .modal{position:fixed;inset:0;background:rgba(12,19,34,.5);display:none;align-items:center;justify-content:center;z-index:120;padding:20px}
   .modal.open{display:flex}
@@ -198,6 +207,24 @@
       <div class="card"><div class="notes" id="notes"><span class="empty">No notes yet.</span></div></div>
     </div>
   </div>
+
+  <!-- ===== SESSION MATERIAL (assigned to this parent / child) ===== -->
+  <div class="section-title"><span class="ico">📚</span><h2>Session material</h2></div>
+  <div class="cards" id="sessionMaterials" style="grid-template-columns:repeat(2,1fr)">
+    <div class="card"><span class="empty">No session material assigned yet.</span></div>
+  </div>
+
+  <!-- ===== OPEN REFERENCE MATERIALS (everyone) ===== -->
+  <div class="section-title"><span class="ico">📖</span><h2>Open Source Reference Materials</h2></div>
+  <div class="cards" id="openMaterials" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card"><span class="empty">No reference materials yet.</span></div>
+  </div>
+
+  <!-- ===== PRODUCTS ===== -->
+  <div class="section-title"><span class="ico">🛒</span><h2>Recommended products</h2></div>
+  <div class="cards" id="products" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card"><span class="empty">No products yet.</span></div>
+  </div>
 </main>
 
 <!-- add-child modal -->
@@ -252,8 +279,68 @@
         if (isAdmin) byId('adminLink').style.display = 'inline-block';
         gate.style.display = 'none'; app.style.display = 'block';
         loadChildren();
+        loadOpenMaterials();
+        loadProducts();
       }).catch(function (e){ gate.textContent = 'Could not load: ' + (e.message || e); });
     });
+
+    function esc2(s){ return s ? String(s).replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}) : ''; }
+
+    function loadSessionMaterials(){
+      // material mapped to this parent OR to the active child
+      var box = byId('sessionMaterials');
+      client.from('session_materials').select('*')
+        .or('parent_id.eq.' + USER.id + (ACTIVE ? (',child_id.eq.' + ACTIVE) : ''))
+        .order('created_at', { ascending:false }).then(function (r){
+          var rows = (r.data || []).filter(function(m){ return m.parent_id===USER.id || m.child_id===ACTIVE; });
+          if (!rows.length){ box.innerHTML = '<div class="card"><span class="empty">No session material assigned yet.</span></div>'; return; }
+          box.innerHTML = '';
+          rows.forEach(function(m){
+            var d = document.createElement('div'); d.className='card mat';
+            d.innerHTML = (m.session_no?'<span class="pill">'+esc2(m.session_no)+'</span>':'') +
+              '<h4>'+esc2(m.title)+'</h4>' +
+              (m.description?'<p>'+esc2(m.description)+'</p>':'') +
+              '<a class="open" href="'+esc2(m.url)+'" target="_blank" rel="noopener">Open material ↗</a>';
+            box.appendChild(d);
+          });
+        });
+    }
+
+    function loadOpenMaterials(){
+      var box = byId('openMaterials');
+      client.from('open_materials').select('*').order('sort_order').order('created_at',{ascending:false}).then(function(r){
+        var rows = r.data || [];
+        if (!rows.length){ box.innerHTML='<div class="card"><span class="empty">No reference materials yet.</span></div>'; return; }
+        box.innerHTML='';
+        rows.forEach(function(m){
+          var d=document.createElement('div'); d.className='card mat';
+          d.innerHTML='<span class="pill">'+esc2(m.kind||'Book')+'</span>'+
+            '<h4>'+esc2(m.title)+'</h4>'+
+            (m.author?'<p>by '+esc2(m.author)+'</p>':'')+
+            (m.description?'<p>'+esc2(m.description)+'</p>':'')+
+            (m.url?'<a class="open" href="'+esc2(m.url)+'" target="_blank" rel="noopener">View ↗</a>':'');
+          box.appendChild(d);
+        });
+      });
+    }
+
+    function loadProducts(){
+      var box = byId('products');
+      client.from('products').select('*').order('sort_order').order('created_at',{ascending:false}).then(function(r){
+        var rows = r.data || [];
+        if (!rows.length){ box.innerHTML='<div class="card"><span class="empty">No products yet.</span></div>'; return; }
+        box.innerHTML='';
+        rows.forEach(function(p){
+          var d=document.createElement('div'); d.className='card mat prod';
+          d.innerHTML=(p.image_url?'<img src="'+esc2(p.image_url)+'" alt="'+esc2(p.title)+'" loading="lazy">':'')+
+            '<h4>'+esc2(p.title)+'</h4>'+
+            (p.price?'<p class="price">'+esc2(p.price)+'</p>':'')+
+            (p.description?'<p>'+esc2(p.description)+'</p>':'')+
+            '<a class="open" href="'+esc2(p.buy_url)+'" target="_blank" rel="noopener">Buy on Amazon ↗</a>';
+          box.appendChild(d);
+        });
+      });
+    }
 
     function loadChildren(){
       client.from('children').select('*').eq('parent_id', USER.id).order('created_at').then(function (r){
@@ -262,6 +349,7 @@
         if (!CHILDREN.length){
           byId('noKids').style.display = 'block';
           byId('stats').style.display = 'none';
+          loadSessionMaterials();   // parent-mapped material still shows with no kids
         } else {
           byId('noKids').style.display = 'none';
           byId('stats').style.display = 'block';
@@ -290,6 +378,7 @@
     function selectChild(id){
       ACTIVE = id; renderKidbar();
       var child = find(id); if (!child) return;
+      loadSessionMaterials();
       client.from('student_stats').select('*').eq('child_id', id).maybeSingle().then(function (r){
         var s = r.data;
         if (!s){ byId('statBody').style.display='none'; byId('noData').style.display='block'; txt('ndName', child.name); byId('updated').textContent=''; }
