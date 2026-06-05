@@ -26,7 +26,7 @@
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
   .eyebrow{font-family:"Hanken Grotesk";font-weight:600;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
 
-  header{position:sticky;top:0;z-index:50;background:rgba(246,242,233,.92);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)}
+  header{position:sticky;top:0;z-index:50;background:rgba(21,32,59,.95);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)}
   nav{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;max-width:var(--maxw);margin:0 auto}
   .brand{display:flex;align-items:center;gap:11px;font-family:"Fraunces";font-weight:600;font-size:1.02rem}
   .brand img{height:38px;width:38px;border-radius:9px;object-fit:cover;box-shadow:0 6px 18px -8px rgba(12,19,34,.5)}
@@ -112,6 +112,13 @@
   footer{background:var(--ink-deep);color:rgba(246,242,233,.7);text-align:center;padding:24px;font-size:.84rem}
 
   @media (max-width:860px){ .row-4{grid-template-columns:1fr 1fr} .row-2{grid-template-columns:1fr} .game-grid{grid-template-columns:1fr} }
+  /* dark banner contrast vs pastel logo */
+  header .brand,header .nav-links a{color:var(--cream)}
+  header .brand span,header .brand small{color:var(--gold)}
+  header .nav-links a{opacity:.85}
+  header .nav-links a:hover{opacity:1;color:var(--gold)}
+  header .btn-gold{background:var(--gold);color:var(--ink)}
+  header .nav-toggle{color:var(--cream)}
 </style>
 </head>
 <body>

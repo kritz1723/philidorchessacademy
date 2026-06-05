@@ -61,7 +61,7 @@
   }
 
   /* ---------- nav ---------- */
-  header{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(246,242,233,.92);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line);transition:box-shadow .3s}
+  header{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(21,32,59,.95);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line);transition:box-shadow .3s}
   header.scrolled{box-shadow:0 12px 30px -18px rgba(12,19,34,.45)}
   nav{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;max-width:var(--maxw);margin:0 auto}
   .brand{display:flex;align-items:center;gap:12px;font-family:"Fraunces";font-weight:600;font-size:1.06rem}
@@ -265,6 +265,13 @@
   @media (max-width:420px){.stats .wrap{grid-template-columns:1fr}.stat+.stat::before{display:none}}
   .nav-links a.active{opacity:1;color:var(--gold)}
   a.prog{text-decoration:none}
+  /* dark banner contrast vs pastel logo */
+  header .brand,header .nav-links a{color:var(--cream)}
+  header .brand span,header .brand small{color:var(--gold)}
+  header .nav-links a{opacity:.85}
+  header .nav-links a:hover{opacity:1;color:var(--gold)}
+  header .btn-gold{background:var(--gold);color:var(--ink)}
+  header .nav-toggle{color:var(--cream)}
 </style>
 </head>
 <body>
