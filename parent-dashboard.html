@@ -118,6 +118,9 @@
   header .nav-links a{opacity:.85}
   header .nav-links a:hover{opacity:1;color:var(--gold)}
   header .btn-gold{background:var(--gold);color:var(--ink)}
+  header .btn-gold:hover{background:#d4b069;transform:none;box-shadow:none}
+  header .btn-outline{border-color:rgba(246,242,233,.55);color:var(--cream)}
+  header .btn-outline:hover{background:rgba(246,242,233,.14);color:var(--cream)}
   header .nav-toggle{color:var(--cream)}
 </style>
 </head>
@@ -133,7 +136,7 @@
     </a>
     <div style="display:flex;gap:10px">
       <a id="adminLink" class="btn btn-outline" href="admin.html" style="display:none">Admin</a>
-      <button id="signOut" class="btn btn-outline" type="button">Sign out</button>
+      <button id="signOut" class="btn btn-gold" type="button">Sign out</button>
     </div>
   </nav>
 </header>
