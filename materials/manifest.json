@@ -1,45 +1,31 @@
 {
   "_comment": "List of session-material pages in this repo. Add an entry for each new page you build; the Admin → Topics material dropdown reads this file.",
   "materials": [
-    {
-      "title": "Session 2 Recap",
-      "url": "materials/session2-recap.html"
-    },
-    {
-      "title": "Basics — Overview",
-      "url": "materials/basics/basics-index.html"
-    },
-    {
-      "title": "Basics — The Board",
-      "url": "materials/basics/basics-board.html"
-    },
-    {
-      "title": "Basics — The Pieces",
-      "url": "materials/basics/basics-pieces.html"
-    },
-    {
-      "title": "Basics — How Pieces Move",
-      "url": "materials/basics/basics-movement.html"
-    },
-    {
-      "title": "Basics — Algebraic Notation",
-      "url": "materials/basics/basics-notation.html"
-    },
-    {
-      "title": "Basics — Check & Checkmate",
-      "url": "materials/basics/basics-check.html"
-    },
-    {
-      "title": "Basics — Piece Values",
-      "url": "materials/basics/basics-values.html"
-    },
-    {
-      "title": "Basics — Good & Bad Trades",
-      "url": "materials/basics/basics-trades.html"
-    },
-    {
-      "title": "Basics — Castling",
-      "url": "materials/basics/basics-castling.html"
-    }
+    { "title": "Basics — Overview", "url": "materials/basics/index.html" },
+    { "title": "Basics — The Board", "url": "materials/basics/board.html" },
+    { "title": "Basics — The Pieces", "url": "materials/basics/pieces.html" },
+    { "title": "Basics — How Pieces Move", "url": "materials/basics/movement.html" },
+    { "title": "Basics — Algebraic Notation", "url": "materials/basics/notation.html" },
+    { "title": "Basics — Check & Checkmate", "url": "materials/basics/check-checkmate.html" },
+    { "title": "Basics — Piece Values", "url": "materials/basics/piece-values.html" },
+    { "title": "Basics — Good & Bad Trades", "url": "materials/basics/trades.html" },
+    { "title": "Basics — Castling", "url": "materials/basics/castling.html" },
+
+    { "title": "Concepts — Overview", "url": "materials/concepts/index.html" },
+    { "title": "Concepts — Centre of the Board", "url": "materials/concepts/centre.html" },
+    { "title": "Concepts — Supported Piece", "url": "materials/concepts/supported-piece.html" },
+    { "title": "Concepts — Unsupported Piece", "url": "materials/concepts/unsupported-piece.html" },
+    { "title": "Concepts — Sufficient Support", "url": "materials/concepts/sufficient-support.html" },
+    { "title": "Concepts — Mating Material", "url": "materials/concepts/mating-material.html" },
+    { "title": "Concepts — Pawn Promotion", "url": "materials/concepts/pawn-promotion.html" },
+    { "title": "Concepts — Underpromotion", "url": "materials/concepts/underpromotion.html" },
+    { "title": "Concepts — Stalemate", "url": "materials/concepts/stalemate.html" },
+
+    { "title": "Tactics — Overview", "url": "materials/tactics/index.html" },
+    { "title": "Tactics — Fork", "url": "materials/tactics/fork.html" },
+    { "title": "Tactics — Pin", "url": "materials/tactics/pin.html" },
+    { "title": "Tactics — Skewer", "url": "materials/tactics/skewer.html" },
+    { "title": "Tactics — Discovered Attack", "url": "materials/tactics/discovered-attack.html" },
+    { "title": "Tactics — Pawn Promotion", "url": "materials/tactics/promotion.html" }
   ]
 }
