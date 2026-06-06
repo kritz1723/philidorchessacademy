@@ -199,7 +199,10 @@
       <h1>Hello, <span id="parentName">there</span> 👋</h1>
       <p class="sub">Track your child’s journey — progress, topics and more.</p>
     </div>
-    <span class="updated" id="updated"></span>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+      <button class="btn btn-outline btn-sm" id="editProfileBtn" type="button" style="border-color:var(--line);color:var(--ink)">Edit profile</button>
+      <span class="updated" id="updated"></span>
+    </div>
   </section>
 
   <!-- child selector -->
@@ -388,6 +391,23 @@
   </div>
 </div>
 
+<!-- edit-profile modal -->
+<div class="modal" id="profileModal">
+  <div class="modal-card">
+    <h3>Your profile</h3>
+    <div class="f"><label for="pf-name">Full name</label><input id="pf-name" type="text" placeholder="Jane Doe"></div>
+    <div class="f"><label for="pf-pref">Preferred name</label><input id="pf-pref" type="text" placeholder="What we’ll greet you by"></div>
+    <div class="f"><label for="pf-phone">Contact number</label><input id="pf-phone" type="tel" placeholder="+91 …"></div>
+    <div class="f"><label for="pf-tz">Time zone</label>
+      <select id="pf-tz"></select></div>
+    <div class="modal-msg" id="pfMsg"></div>
+    <div class="modal-bar">
+      <button type="button" class="btn btn-outline btn-sm" id="pfCancel">Cancel</button>
+      <button type="button" class="btn btn-gold btn-sm" id="pfSave">Save</button>
+    </div>
+  </div>
+</div>
+
 <footer>&copy; <span id="yr"></span> Philidor Chess Academy — Parent Portal</footer>
 
 <script src="js/supabase-config.js"></script>
@@ -418,7 +438,7 @@
     if (!configured || !window.supabase || !window.supabase.createClient){ window.location.href = 'parent-login.html'; return; }
     var client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-    var USER = null, CHILDREN = [], ACTIVE = null, CHART = null, HISTORY = [], TREND = null;
+    var USER = null, CHILDREN = [], ACTIVE = null, CHART = null, HISTORY = [], TREND = null, PROFILE = {};
     function txt(id, v){ var e = byId(id); if (e) e.textContent = (v===0||v) ? v : '—'; }
 
     client.auth.getSession().then(function (res){
@@ -431,13 +451,14 @@
         client.from('admins').select('user_id').eq('user_id', USER.id).maybeSingle()
       ]).then(function (out){
         var profile = (out[0] && out[0].data) || USER.user_metadata || {};
+        PROFILE = profile;
         var isAdmin = !!(out[1] && out[1].data);
         // Deactivated accounts are bounced back to the login page.
         if (out[0] && out[0].data && out[0].data.is_active === false && !isAdmin) {
           client.auth.signOut().then(function () { window.location.href = 'parent-login.html'; });
           return;
         }
-        var first = (profile.full_name || '').split(' ')[0] || 'there';
+        var first = (profile.preferred_name || '').trim() || (profile.full_name || '').split(' ')[0] || 'there';
         txt('parentName', first);
         if (isAdmin) byId('adminLink').style.display = 'inline-block';
         gate.style.display = 'none'; app.style.display = 'block';
@@ -697,6 +718,42 @@
           if (r.error){ byId('kidMsg').textContent = r.error.message; return; }
           closeModal(); ACTIVE = r.data.id; loadChildren();
         });
+    });
+
+    // ---- edit profile ----
+    function tzList(){
+      try { if (Intl.supportedValuesOf) return Intl.supportedValuesOf('timeZone'); } catch(e){}
+      return ['Asia/Kolkata','Asia/Dubai','Asia/Singapore','Europe/London','America/New_York','America/Los_Angeles','Australia/Sydney','UTC'];
+    }
+    function openProfile(){
+      var sel = byId('pf-tz');
+      if (!sel.options.length){
+        var guess=''; try{ guess=Intl.DateTimeFormat().resolvedOptions().timeZone; }catch(e){}
+        var o0=document.createElement('option'); o0.value=''; o0.textContent='Select…'; sel.appendChild(o0);
+        tzList().forEach(function(z){ var o=document.createElement('option'); o.value=z; o.textContent=z; sel.appendChild(o); });
+        if (!PROFILE.timezone && guess) PROFILE._guessTz = guess;
+      }
+      byId('pf-name').value = PROFILE.full_name || '';
+      byId('pf-pref').value = PROFILE.preferred_name || '';
+      byId('pf-phone').value = PROFILE.phone || '';
+      byId('pf-tz').value = PROFILE.timezone || PROFILE._guessTz || '';
+      byId('pfMsg').textContent=''; byId('profileModal').classList.add('open');
+    }
+    function closeProfile(){ byId('profileModal').classList.remove('open'); }
+    byId('editProfileBtn').addEventListener('click', openProfile);
+    byId('pfCancel').addEventListener('click', closeProfile);
+    byId('profileModal').addEventListener('click', function(e){ if (e.target===byId('profileModal')) closeProfile(); });
+    byId('pfSave').addEventListener('click', function(){
+      var msg=byId('pfMsg'); msg.style.color='var(--red)'; msg.textContent='Saving…';
+      var patch={ full_name:byId('pf-name').value.trim()||null, preferred_name:byId('pf-pref').value.trim()||null,
+        phone:byId('pf-phone').value.trim()||null, timezone:byId('pf-tz').value||null };
+      client.from('profiles').update(patch).eq('id', USER.id).then(function(r){
+        if (r.error){ msg.textContent='Error: '+r.error.message; return; }
+        PROFILE = Object.assign({}, PROFILE, patch);
+        var first=(PROFILE.preferred_name||'').trim() || (PROFILE.full_name||'').split(' ')[0] || 'there';
+        txt('parentName', first);
+        closeProfile();
+      });
     });
 
     byId('signOut').addEventListener('click', function (){ client.auth.signOut().then(function (){ window.location.href = 'parent-login.html'; }); });
