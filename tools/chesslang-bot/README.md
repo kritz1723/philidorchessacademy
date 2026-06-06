@@ -54,6 +54,8 @@ CHESSLANG_EMAIL=... CHESSLANG_PASSWORD=... DRY_RUN=1 node sync.js
 ## Notes / limits
 - If ChessLang login uses **2FA / OTP**, a headless bot can't pass it —
   tell me and we'll switch to the upload-export approach.
-- Stats reflect whatever **date range** ChessLang shows by default. If you
-  need a fixed range (e.g. all-time), we can set the date pickers in the
-  bot — ask and I'll add it.
+- **Date range:** the bot sets the report range to **`DATE_FROM` → `DATE_TO`**
+  (defaults **2026-05-01 → today**). Override via env if needed, e.g.
+  `DATE_FROM=2026-05-01 DATE_TO=2026-06-30`. Date setting is best-effort
+  (assumes an Ant Design range picker); the dry-run log prints whether it
+  took effect.

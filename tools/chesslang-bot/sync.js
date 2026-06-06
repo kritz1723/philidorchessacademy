@@ -29,8 +29,20 @@ const {
   CHESSLANG_PASSWORD,
   CHESSLANG_LOGIN_URL = 'https://app.chesslang.com/',
   CHESSLANG_BASE = 'https://app.chesslang.com/app/reports/student',
+  DATE_FROM = '2026-05-01',
+  DATE_TO = '',
   DRY_RUN = '',
 } = process.env;
+
+// ChessLang shows dates as DD-MMM-YYYY (e.g. 01-May-2026).
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(iso) {
+  var d = iso ? new Date(iso) : new Date();
+  if (isNaN(d)) d = new Date();
+  return String(d.getDate()).padStart(2, '0') + '-' + MONTHS[d.getMonth()] + '-' + d.getFullYear();
+}
+var DATE_FROM_STR = DATE_FROM ? fmtDate(DATE_FROM) : null;
+var DATE_TO_STR = fmtDate(DATE_TO || undefined); // blank => today
 
 const DEBUG_DIR = path.join(__dirname, 'debug');
 function ensureDebug() { try { fs.mkdirSync(DEBUG_DIR, { recursive: true }); } catch (_e) {} }
@@ -86,10 +98,31 @@ async function login(page) {
   }
 }
 
+// Best-effort: set the report's date range. ChessLang looks like an
+// Ant Design app (RangePicker = two .ant-picker-input inputs). If the
+// markup differs, we log and fall back to ChessLang's default range.
+async function setDateRange(page) {
+  if (!DATE_FROM_STR && !DATE_TO_STR) return;
+  try {
+    var inputs = page.locator('.ant-picker-input input');
+    var n = await inputs.count();
+    if (n >= 2) {
+      if (DATE_FROM_STR) { await inputs.nth(0).click(); await inputs.nth(0).fill(DATE_FROM_STR); await page.keyboard.press('Enter'); }
+      if (DATE_TO_STR)   { await inputs.nth(1).click(); await inputs.nth(1).fill(DATE_TO_STR);   await page.keyboard.press('Enter'); }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(1200);
+      console.log('  date range set ' + DATE_FROM_STR + ' → ' + DATE_TO_STR);
+      return;
+    }
+    console.warn('  date-range inputs (.ant-picker-input) not found — using ChessLang default range');
+  } catch (e) { console.warn('  date range set failed: ' + (e && e.message || e)); }
+}
+
 async function tabText(page, uuid, tab) {
   var url = CHESSLANG_BASE + '/' + uuid + '/' + tab;
   await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
   await page.waitForTimeout(1500); // let the SPA render numbers
+  await setDateRange(page);
   return await page.evaluate(function () { return document.body.innerText; });
 }
 
