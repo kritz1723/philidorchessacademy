@@ -79,10 +79,14 @@
   .viewnav button:hover{color:var(--ink)}
   .viewnav button.active{background:var(--ink);color:var(--cream)}
 
-  /* ---------- portal side navigation ---------- */
-  .portal{display:flex;gap:24px;align-items:flex-start}
-  .sidenav{position:sticky;top:78px;flex:none;width:212px;display:flex;flex-direction:column;gap:3px;
-    background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:var(--soft)}
+  /* ---------- app shell: full-height left rail ---------- */
+  .shell{display:flex;align-items:flex-start;width:100%}
+  .shell-main{flex:1;min-width:0;padding:0 8px}
+  .sidenav{position:sticky;top:64px;flex:none;width:244px;height:calc(100vh - 64px);min-height:460px;
+    display:flex;flex-direction:column;gap:4px;background:var(--paper);border-right:1px solid var(--line);
+    padding:24px 16px;box-shadow:8px 0 30px -24px rgba(14,20,38,.55);overflow-y:auto}
+  .sidenav::-webkit-scrollbar{display:none}
+  .sidenav .navlabel{font-size:.66rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);opacity:.6;padding:0 .95em 8px}
   .sidenav button{display:flex;align-items:center;gap:11px;border:none;background:transparent;font-family:inherit;
     font-weight:600;font-size:.92rem;color:var(--ink-soft);padding:.72em .95em;border-radius:11px;cursor:pointer;
     text-align:left;width:100%;transition:.16s;white-space:nowrap}
@@ -90,7 +94,7 @@
   .sidenav button:hover{background:var(--cream);color:var(--ink)}
   .sidenav button.active{background:linear-gradient(135deg,var(--accent),var(--accent-3));color:#fff;box-shadow:0 8px 20px -8px rgba(79,99,224,.6)}
   .sidenav button.active .ic{filter:saturate(0) brightness(2.2)}
-  .portal-content{flex:1;min-width:0}
+  .portal-content{min-width:0}
 
   /* ---------- around the world ---------- */
   .fedfeat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:20px}
@@ -234,10 +238,14 @@
     .row-4{grid-template-columns:1fr 1fr} .row-2{grid-template-columns:1fr}
     .grid3{grid-template-columns:1fr} .game-grid{grid-template-columns:1fr}
     .viewnav{width:100%}
-    .portal{flex-direction:column}
-    .sidenav{position:static;width:100%;flex-direction:row;overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .sidenav::-webkit-scrollbar{display:none}
-    .sidenav button{white-space:nowrap}
+    .shell{flex-direction:column}
+    .sidenav{position:sticky;top:64px;z-index:40;width:auto;height:auto;min-height:0;flex-direction:row;
+      gap:6px;border-right:none;border-bottom:1px solid var(--line);border-radius:0;padding:9px 12px;
+      box-shadow:0 6px 18px -12px rgba(14,20,38,.5);overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .sidenav .navlabel{display:none}
+    .sidenav button{white-space:nowrap;flex:0 0 auto;width:auto;padding:.6em 1em;font-size:.86rem;background:var(--cream)}
+    .sidenav button.active{background:linear-gradient(135deg,var(--accent),var(--accent-3))}
+    .shell-main{padding:0}
   }
 </style>
 </head>
@@ -258,7 +266,16 @@
   </nav>
 </header>
 
-<main class="wrap" id="app" style="display:none">
+<main class="shell" id="app" style="display:none">
+  <nav class="sidenav" id="viewnav" aria-label="Dashboard sections">
+    <div class="navlabel">Menu</div>
+    <button type="button" data-view="overview" class="active"><span class="ic">📊</span>Overview</button>
+    <button type="button" data-view="topics"><span class="ic">📘</span>Topics</button>
+    <button type="button" data-view="library"><span class="ic">📚</span>Library</button>
+    <button type="button" data-view="store"><span class="ic">🛍️</span>Store</button>
+    <button type="button" data-view="world"><span class="ic">🌍</span>Around the World</button>
+  </nav>
+  <div class="shell-main"><div class="wrap">
   <section class="hero">
     <div>
       <span class="eyebrow">Parent Portal</span>
@@ -281,16 +298,8 @@
     <button class="btn btn-gold" id="noKidsAdd" type="button">+ Add a child</button>
   </div>
 
-  <!-- portal layout: side navigation + content -->
-  <div class="portal">
-    <nav class="sidenav" id="viewnav" aria-label="Dashboard sections">
-      <button type="button" data-view="overview" class="active"><span class="ic">📊</span>Overview</button>
-      <button type="button" data-view="topics"><span class="ic">📘</span>Topics</button>
-      <button type="button" data-view="library"><span class="ic">📚</span>Library</button>
-      <button type="button" data-view="store"><span class="ic">🛍️</span>Store</button>
-      <button type="button" data-view="world"><span class="ic">🌍</span>Around the World</button>
-    </nav>
-    <div class="portal-content">
+  <!-- view panels (switched by the side nav) -->
+  <div class="portal-content">
 
   <!-- ===================== OVERVIEW ===================== -->
   <section class="view" data-view="overview">
@@ -522,7 +531,7 @@
   </section>
 
     </div><!-- /portal-content -->
-  </div><!-- /portal -->
+  </div></div><!-- /wrap /shell-main -->
 </main>
 
 <!-- add-child modal -->
@@ -635,7 +644,7 @@
     function finishInit(profile){
       var first = (profile.preferred_name || '').trim() || (profile.full_name || '').split(' ')[0] || 'there';
       txt('parentName', first);
-      gate.style.display = 'none'; app.style.display = 'block';
+      gate.style.display = 'none'; app.style.display = 'flex';
       loadChildren();
       loadOpenMaterials();
       loadProducts();
