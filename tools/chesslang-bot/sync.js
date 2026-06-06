@@ -159,10 +159,20 @@ async function tabText(page, uuid, tab) {
   return await page.evaluate(function () { return document.body.innerText; });
 }
 
+// Return the slice of text between `start` and `end` markers (end optional).
+function seg(text, start, end) {
+  var s = text.indexOf(start);
+  if (s < 0) return '';
+  s += start.length;
+  if (!end) return text.slice(s);
+  var e = text.indexOf(end, s);
+  return e < 0 ? text.slice(s) : text.slice(s, e);
+}
+
 async function scrapeStudent(page, uuid) {
   var stats = {};
 
-  // ----- Classroom (summary lives on the Overall tab) -----
+  // ----- Classroom: core summary from Overall tab -----
   var c = await tabText(page, uuid, 'overall');
   stats.attendance_pct = num(c, /Attendance\s*([\d.]+)\s*%/i);
   var cls = c.match(/Total classes attended\s*(\d+)\s*\/\s*(\d+)/i);
@@ -170,7 +180,19 @@ async function scrapeStudent(page, uuid) {
   stats.hours_in_classroom = num(c, /Total hours spent in classroom\s*([\d.]+)/i);
   stats.leaderboard_points = num(c, /Total leaderboard points\s*([\d,]+)/i);
 
-  // ----- Game Area -----
+  // ----- Classroom: extras from the detailed Classroom tab -----
+  var cd = await tabText(page, uuid, 'classroom');
+  if (stats.attendance_pct == null) stats.attendance_pct = num(cd, /Attendance\s*([\d.]+)\s*%/i);
+  if (stats.classes_attended == null) stats.classes_attended = num(cd, /Classes attended\s*(\d+)/i);
+  if (stats.hours_in_classroom == null) stats.hours_in_classroom = num(cd, /Total hours spent\s*([\d.]+)/i);
+  stats.classes_invited    = num(cd, /Classes invited\s*(\d+)/i);
+  stats.individual_classes = num(cd, /Individual classes\s*(\d+)/i);
+  stats.group_classes      = num(cd, /Group classes\s*(\d+)/i);
+  stats.medals_gold   = num(cd, /Gold\s*(\d+)/i);
+  stats.medals_silver = num(cd, /Silver\s*(\d+)/i);
+  stats.medals_bronze = num(cd, /Bronze\s*(\d+)/i);
+
+  // ----- Game Area (overall + by colour) -----
   var g = await tabText(page, uuid, 'gamearea');
   stats.games_played = num(g, /Total games\s*(\d+)/i);
   stats.wins = num(g, /Total wins\s*(\d+)/i);
@@ -178,6 +200,10 @@ async function scrapeStudent(page, uuid) {
   stats.draws = num(g, /Total drawn\s*(\d+)/i);
   stats.game_time = str(g, /Total time spent playing\s*([^\n]+)/i);
   if (stats.game_time === '-' || stats.game_time === '—') stats.game_time = null;
+  var gW = seg(g, 'Total games with white', 'Total games with black');
+  var gB = seg(g, 'Total games with black', null);
+  if (gW) { stats.white_games = num(gW, /Total games\s*(\d+)/i); stats.white_wins = num(gW, /Total wins\s*(\d+)/i); stats.white_losses = num(gW, /Total lost\s*(\d+)/i); stats.white_draws = num(gW, /Total drawn\s*(\d+)/i); }
+  if (gB) { stats.black_games = num(gB, /Total games\s*(\d+)/i); stats.black_wins = num(gB, /Total wins\s*(\d+)/i); stats.black_losses = num(gB, /Total lost\s*(\d+)/i); stats.black_draws = num(gB, /Total drawn\s*(\d+)/i); }
 
   // ----- Quiz (best-effort; refine labels after first run) -----
   var q = await tabText(page, uuid, 'quiz');
@@ -188,10 +214,14 @@ async function scrapeStudent(page, uuid) {
   stats.quiz_points = num(q, /Total (?:quiz )?points\s*([\d,]+)/i);
   stats.quiz_time_taken = str(q, /Total time (?:taken|spent)[^\n]*?\s([^\n]+)/i);
 
-  // ----- Tournament -----
+  // ----- Tournament (overall + podium) -----
   var t = await tabText(page, uuid, 'tournament');
   stats.tournaments_played = num(t, /Total games\s*(\d+)/i);
   stats.tournament_best = str(t, /Best (?:result|finish)\s*([^\n]+)/i);
+  var rankings = seg(t, 'Tournament rankings', 'Total games with white') || t;
+  stats.tournaments_1st = num(rankings, /\b1st\b\s*(\d+)/i);
+  stats.tournaments_2nd = num(rankings, /\b2nd\b\s*(\d+)/i);
+  stats.tournaments_3rd = num(rankings, /\b3rd\b\s*(\d+)/i);
 
   return compact(stats);
 }
