@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Around the World — Chess Federations | Philidor Chess Academy</title>
+<meta name="description" content="A directory of chess federations around the world — FIDE, US Chess, the All India Chess Federation and major national federations across every continent.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15203b; --ink-deep:#0c1322; --ink-soft:#26314d;
+    --cream:#f6f2e9; --cream-2:#efe9dc; --paper:#fbf8f1; --bg:#f4f1ea;
+    --gold:#bf9b54; --gold-bright:#d8b76a;
+    --line:rgba(21,32,59,.10);
+    --soft:0 1px 2px rgba(12,19,34,.04), 0 18px 40px -28px rgba(12,19,34,.34);
+    --maxw:1100px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Hanken Grotesk",sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(75% 50% at 100% 0%, rgba(191,155,84,.10), transparent 60%),
+                     radial-gradient(70% 45% at 0% 0%, rgba(191,231,224,.16), transparent 55%);background-attachment:fixed}
+  h1,h2,h3,h4{font-family:"Fraunces",serif;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  .eyebrow{font-weight:600;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+
+  /* header */
+  header{position:sticky;top:0;z-index:50;background:rgba(21,32,59,.97);backdrop-filter:blur(12px);box-shadow:0 1px 0 rgba(12,19,34,.25)}
+  nav{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 22px;max-width:var(--maxw);margin:0 auto}
+  .brand{display:flex;align-items:center;gap:11px;color:var(--cream)}
+  .brand img{height:38px;width:38px;border-radius:10px;object-fit:cover}
+  .brand b{font-family:"Fraunces";font-weight:600;font-size:1.02rem}
+  .brand small{display:block;font-weight:500;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+  .nav-links{display:flex;align-items:center;gap:24px}
+  .nav-links a{color:var(--cream);font-size:.92rem;font-weight:500;opacity:.85;transition:.2s}
+  .nav-links a:hover{opacity:1;color:var(--gold)}
+  .nav-links a.active{opacity:1;color:var(--gold)}
+  .nav-links .btn{opacity:1}
+  .btn{font-weight:600;font-size:.86rem;padding:.5em 1.05em;border-radius:999px;border:none;cursor:pointer;display:inline-block;transition:.18s}
+  .btn-gold{background:var(--gold);color:var(--ink)}
+  .btn-gold:hover{background:var(--gold-bright)}
+  .nav-toggle{display:none;background:none;border:none;color:var(--cream);cursor:pointer}
+
+  /* hero */
+  .hero{padding:54px 0 26px;text-align:center}
+  .hero h1{font-size:clamp(2rem,5vw,3rem);margin:.2em 0 .25em}
+  .hero p{max-width:660px;margin:0 auto;color:var(--ink-soft);font-size:1.05rem}
+
+  /* sections */
+  main{padding-bottom:70px}
+  .sec-title{display:flex;align-items:baseline;gap:12px;margin:40px 0 16px}
+  .sec-title h2{font-size:1.45rem}
+  .sec-title span{flex:1;height:1px;background:var(--line)}
+  .sec-title .cnt{font-size:.8rem;color:var(--ink-soft);font-family:"Hanken Grotesk";font-weight:600}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+  .fed{display:flex;flex-direction:column;gap:4px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--soft);transition:transform .16s,box-shadow .16s;position:relative;overflow:hidden}
+  .fed::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold)}
+  .fed:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(12,19,34,.05),0 24px 46px -28px rgba(12,19,34,.4)}
+  .fed .flag{font-size:1.5rem;line-height:1}
+  .fed h4{font-size:1.05rem;margin-top:4px}
+  .fed .country{font-size:.8rem;color:var(--ink-soft)}
+  .fed .go{margin-top:8px;font-size:.84rem;font-weight:600;color:var(--gold)}
+  .fed:hover .go{color:var(--gold-bright)}
+
+  /* featured "start here" cards */
+  .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:6px}
+  .feat{display:block;background:linear-gradient(160deg,#18233f,#0f1830);color:var(--cream);border-radius:18px;padding:24px;box-shadow:var(--soft);transition:transform .18s}
+  .feat:hover{transform:translateY(-3px)}
+  .feat .tag{font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-bright)}
+  .feat h3{color:#fff;font-size:1.3rem;margin:8px 0 6px}
+  .feat p{color:rgba(246,242,233,.72);font-size:.9rem}
+  .feat .go{margin-top:12px;display:inline-block;font-weight:600;color:var(--gold-bright)}
+
+  .note{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:0 12px 12px 0;padding:16px 20px;margin-top:14px;color:var(--ink-soft);font-size:.92rem}
+  .note a{color:var(--gold);font-weight:600}
+
+  footer{background:var(--ink-deep);color:var(--cream);margin-top:30px}
+  footer .wrap{padding:30px 22px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px;align-items:center}
+  footer a{color:var(--cream);opacity:.8}
+  footer a:hover{opacity:1;color:var(--gold)}
+  footer .fl{display:flex;gap:18px;flex-wrap:wrap;font-size:.88rem}
+  footer small{display:block;width:100%;text-align:center;padding:14px;color:rgba(246,242,233,.5);font-size:.8rem;border-top:1px solid rgba(246,242,233,.1)}
+
+  @media(max-width:760px){
+    .nav-links{position:fixed;inset:0 0 0 auto;width:min(300px,80vw);background:var(--ink);flex-direction:column;align-items:flex-start;justify-content:center;padding:40px;gap:22px;transform:translateX(100%);transition:transform .25s;box-shadow:-20px 0 60px rgba(0,0,0,.4)}
+    .nav-links.open{transform:none}
+    .nav-toggle{display:block}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a class="brand" href="index.html">
+      <img src="Logo.svg" alt="Philidor Chess Academy logo">
+      <span style="line-height:1.1"><b>Philidor</b><small>Chess Academy</small></span>
+    </a>
+    <div class="nav-links" id="navlinks">
+      <a href="index.html">Home</a>
+      <a href="about.html">Coach</a>
+      <a href="achievements.html">Achievements</a>
+      <a href="programs.html">Programs</a>
+      <a href="around-the-world.html" class="active">Around the World</a>
+      <a href="contact.html">Contact</a>
+      <a href="parent-login.html">Parent Login</a>
+      <a class="btn btn-gold" href="https://app.chesslang.com/login" target="_blank" rel="noopener">Student Login</a>
+    </div>
+    <button class="nav-toggle" id="navtoggle" aria-label="Menu">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
+    </button>
+  </nav>
+</header>
+
+<section class="hero wrap">
+  <span class="eyebrow">Chess around the world</span>
+  <h1>Federations Around the World</h1>
+  <p>Chess is played in every corner of the globe. Here are the official federations that organise tournaments, ratings and titles — start with the world body, then explore by region.</p>
+</section>
+
+<main class="wrap">
+
+  <!-- Start here -->
+  <div class="sec-title"><h2>Start here</h2><span></span></div>
+  <div class="feature-grid">
+    <a class="feat" href="https://www.fide.com/" target="_blank" rel="noopener">
+      <span class="tag">World Governing Body</span>
+      <h3>FIDE</h3>
+      <p>The International Chess Federation — ratings, titles, world championships and the rules of the game.</p>
+      <span class="go">Visit fide.com →</span>
+    </a>
+    <a class="feat" href="https://new.uschess.org/upcoming-tournaments" target="_blank" rel="noopener">
+      <span class="tag">United States</span>
+      <h3>US Chess — Tournaments</h3>
+      <p>Upcoming over-the-board tournaments across the United States, from the US Chess Federation.</p>
+      <span class="go">See upcoming events →</span>
+    </a>
+    <a class="feat" href="https://aicf.in/" target="_blank" rel="noopener">
+      <span class="tag">India</span>
+      <h3>All India Chess Federation</h3>
+      <p>The national body for chess in India — events, ratings and national championships.</p>
+      <span class="go">Visit aicf.in →</span>
+    </a>
+  </div>
+
+  <div class="note">
+    Looking for a federation not listed here? FIDE maintains the authoritative directory of all 190+ member federations —
+    <a href="https://directory.fide.com/list/member_federations/main" target="_blank" rel="noopener">browse the full FIDE Member Federations directory →</a>
+  </div>
+
+  <!-- Europe -->
+  <div class="sec-title"><h2>Europe</h2><span></span><span class="cnt">16 federations</span></div>
+  <div class="grid">
+    <a class="fed" href="https://www.englishchess.org.uk/" target="_blank" rel="noopener"><span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><h4>English Chess Federation</h4><span class="country">England</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://www.chessscotland.com/" target="_blank" rel="noopener"><span class="flag">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span><h4>Chess Scotland</h4><span class="country">Scotland</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://www.icu.ie/" target="_blank" rel="noopener"><span class="flag">🇮🇪</span><h4>Irish Chess Union</h4><span class="country">Ireland</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://www.schachbund.de/" target="_blank" rel="noopener"><span class="flag">🇩🇪</span><h4>Deutscher Schachbund</h4><span class="country">Germany</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://www.echecs.asso.fr/" target="_blank" rel="noopener"><span class="flag">🇫🇷</span><h4>Fédération Française des Échecs</h4><span class="country">France</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://www.feda.org/" target="_blank" rel="noopener"><span class="flag">🇪🇸</span><h4>Federación Española de Ajedrez</h4><span class="country">Spain</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://www.federscacchi.it/" target="_blank" rel="noopener"><span class="flag">🇮🇹</span><h4>Federazione Scacchistica Italiana</h4><span class="country">Italy</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://www.schaakbond.nl/" target="_blank" rel="noopener"><span class="flag">🇳🇱</span><h4>Koninklijke Nederlandse Schaakbond</h4><span class="country">Netherlands</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://sjakk.no/" target="_blank" rel="noopener"><span class="flag">🇳🇴</span><h4>Norges Sjakkforbund</h4><span class="country">Norway</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://schack.se/" target="_blank" rel="noopener"><span class="flag">🇸🇪</span><h4>Sveriges Schackförbund</h4><span class="country">Sweden</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://skak.dk/" target="_blank" rel="noopener"><span class="flag">🇩🇰</span><h4>Dansk Skak Union</h4><span class="country">Denmark</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://skak.is/" target="_blank" rel="noopener"><span class="flag">🇮🇸</span><h4>Skáksamband Íslands</h4><span class="country">Iceland</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://pzszach.pl/" target="_blank" rel="noopener"><span class="flag">🇵🇱</span><h4>Polski Związek Szachowy</h4><span class="country">Poland</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://chess.hu/" target="_blank" rel="noopener"><span class="flag">🇭🇺</span><h4>Magyar Sakkszövetség</h4><span class="country">Hungary</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://chessfed.am/en" target="_blank" rel="noopener"><span class="flag">🇦🇲</span><h4>Chess Federation of Armenia</h4><span class="country">Armenia</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://ruchess.ru/" target="_blank" rel="noopener"><span class="flag">🇷🇺</span><h4>Chess Federation of Russia</h4><span class="country">Russia</span><span class="go">Open site →</span></a>
+  </div>
+
+  <!-- Americas -->
+  <div class="sec-title"><h2>Americas</h2><span></span><span class="cnt">2 federations</span></div>
+  <div class="grid">
+    <a class="fed" href="https://new.uschess.org/" target="_blank" rel="noopener"><span class="flag">🇺🇸</span><h4>US Chess Federation</h4><span class="country">United States</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://www.chess.ca/" target="_blank" rel="noopener"><span class="flag">🇨🇦</span><h4>Chess Federation of Canada</h4><span class="country">Canada</span><span class="go">Open site →</span></a>
+  </div>
+
+  <!-- Asia -->
+  <div class="sec-title"><h2>Asia</h2><span></span><span class="cnt">1 federation</span></div>
+  <div class="grid">
+    <a class="fed" href="https://aicf.in/" target="_blank" rel="noopener"><span class="flag">🇮🇳</span><h4>All India Chess Federation</h4><span class="country">India</span><span class="go">Open site →</span></a>
+  </div>
+
+  <!-- Oceania -->
+  <div class="sec-title"><h2>Oceania</h2><span></span><span class="cnt">2 federations</span></div>
+  <div class="grid">
+    <a class="fed" href="https://auschess.org.au/" target="_blank" rel="noopener"><span class="flag">🇦🇺</span><h4>Australian Chess Federation</h4><span class="country">Australia</span><span class="go">Open site →</span></a>
+    <a class="fed" href="https://newzealandchess.co.nz/" target="_blank" rel="noopener"><span class="flag">🇳🇿</span><h4>New Zealand Chess Federation</h4><span class="country">New Zealand</span><span class="go">Open site →</span></a>
+  </div>
+
+  <!-- Africa -->
+  <div class="sec-title"><h2>Africa</h2><span></span><span class="cnt">1 federation</span></div>
+  <div class="grid">
+    <a class="fed" href="https://www.chessa.co.za/" target="_blank" rel="noopener"><span class="flag">🇿🇦</span><h4>Chess South Africa</h4><span class="country">South Africa</span><span class="go">Open site →</span></a>
+  </div>
+
+  <div class="note" style="margin-top:34px">
+    This is a curated selection. For every member federation — including continental confederations (Europe, Americas, Asia, Africa, Oceania) — see the official
+    <a href="https://directory.fide.com/list/member_federations/main" target="_blank" rel="noopener">FIDE directory</a>.
+  </div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="Logo.svg" alt="logo"><span style="line-height:1.1"><b>Philidor</b><small>Chess Academy</small></span></a>
+    <div class="fl">
+      <a href="about.html">Coach</a>
+      <a href="achievements.html">Achievements</a>
+      <a href="programs.html">Programs</a>
+      <a href="around-the-world.html">Around the World</a>
+      <a href="contact.html">Contact</a>
+      <a href="parent-login.html">Parent login</a>
+    </div>
+  </div>
+  <small>&copy; <span id="yr"></span> Philidor Chess Academy. Federation links open official third-party sites.</small>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  var t = document.getElementById('navtoggle'), n = document.getElementById('navlinks');
+  if (t && n) t.addEventListener('click', function(){ n.classList.toggle('open'); });
+</script>
+</body>
+</html>
