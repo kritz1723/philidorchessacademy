@@ -219,7 +219,7 @@
         <!-- Panel C: bulk-assign ALL materials in the selected topic -->
         <section class="panel addcard hidden" id="topicAssign">
           <h2>Assign every material in “<span id="tpAssignName"></span>”</h2>
-          <p style="color:var(--ink-soft);font-size:.86rem;margin:-6px 0 14px">Shortcut: applies this selection to <b>all</b> materials in the topic at once (replaces each material's current assignment). For one-by-one control, use a material's <b>Settings</b> above. Release stays controlled per material.</p>
+          <p style="color:var(--ink-soft);font-size:.86rem;margin:-6px 0 14px">Shortcut: applies this selection to <b>all</b> materials in the topic at once (replaces each material's current assignment). For one-by-one control, use a material's <b>Settings</b> above.</p>
           <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-weight:600">
             <input type="checkbox" id="tp_assign_all"> Assign to all parents
           </label>
@@ -228,6 +228,19 @@
             <div class="f"><label>Children</label><div id="tp_children" style="max-height:200px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--cream)"></div></div>
           </div>
           <div class="bar"><button class="btn btn-gold" type="button" id="tpAssignSave">Save assignments</button><span class="msg" id="tpAssignMsg"></span></div>
+
+          <div style="border-top:1px solid var(--line);margin-top:18px;padding-top:16px">
+            <h2 style="font-size:1.05rem;margin-bottom:6px">Release</h2>
+            <p style="color:var(--ink-soft);font-size:.86rem;margin-bottom:12px">Materials stay hidden from parents until released. Release every material in this topic at once, or set a date to auto-release. (Per-material control is in each material's <b>Settings</b>.)</p>
+            <div class="grid2" style="align-items:end">
+              <div class="f"><label>Auto-release date (optional)</label><input id="tp_release_at" type="datetime-local"></div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-gold btn-xs" type="button" id="tpReleaseNow">Release all now</button>
+                <button class="btn btn-ghost btn-xs" type="button" id="tpHideAll">Hide all</button>
+              </div>
+            </div>
+            <div class="bar"><span class="msg" id="tpReleaseMsg"></span></div>
+          </div>
         </section>
       </div>
     </div>
@@ -702,6 +715,24 @@
           });
         });
       });
+    });
+
+    // -- topic-level release (applies to ALL materials in the topic) --
+    function bulkRelease(patch, label){
+      if (!CURRENT_TOPIC) return;
+      var msg=byId('tpReleaseMsg'); msg.className='msg'; msg.textContent='Saving…';
+      client.from('topic_materials').update(patch).eq('topic_id', CURRENT_TOPIC.id).then(function(r){
+        if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
+        msg.textContent='✓ '+label; msg.className='msg ok'; loadTopicMaterials();
+      });
+    }
+    byId('tpReleaseNow').addEventListener('click', function(){
+      var when = byId('tp_release_at').value;
+      if (when){ bulkRelease({ is_released:false, release_at:new Date(when).toISOString() }, 'Scheduled all to auto-release'); }
+      else { bulkRelease({ is_released:true, release_at:null }, 'Released all materials'); }
+    });
+    byId('tpHideAll').addEventListener('click', function(){
+      bulkRelease({ is_released:false, release_at:null }, 'Hid all materials');
     });
 
     // ============ OPEN MATERIALS ============
