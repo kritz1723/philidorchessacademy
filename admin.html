@@ -636,7 +636,7 @@
     byId('form').addEventListener('submit', function(e){
       e.preventDefault(); if (!selectedChild) return;
       var msg=byId('msg'); msg.textContent='Saving…'; msg.className='msg';
-      var p={ child_id:selectedChild.id, updated_at:new Date().toISOString() };
+      var p={ child_id:selectedChild.id, parent_id:selectedChild.parent_id, updated_at:new Date().toISOString() };
       NUM.forEach(function(k){ p[k]= byId(k).value===''?0:Number(byId(k).value); });
       TXT.forEach(function(k){ p[k]=byId(k).value; });
       client.from('student_stats').upsert(p,{onConflict:'child_id'}).then(function(r){
