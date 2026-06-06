@@ -220,6 +220,7 @@
             </div>
             <div class="f" style="margin:12px 0"><label>…or upload your material (private — PDF, HTML page, image)</label><input id="tm_file" type="file" accept=".pdf,.html,.htm,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx"><small style="display:block;margin-top:4px;color:#9aa3b8">Stored privately. Only parents you assign this topic to can open it, via a secure link. An uploaded .html opens as a page.</small></div>
             <div class="f" style="margin:12px 0"><label>…or bundle a multi-page set into ONE private file (select all the .html pages)</label><input id="tm_bundle" type="file" accept=".html,.htm" multiple><small style="display:block;margin-top:4px;color:#9aa3b8">Combines interlinked pages into a single private file; page-to-page links keep working. Never touches the public repo.</small></div>
+            <div class="f" style="margin:12px 0"><label>…or reuse a material you already added</label><select id="tm_reuse"><option value="">— none —</option></select><small style="display:block;margin-top:4px;color:#9aa3b8">Attaches an existing material (including private uploads) to this topic — no re-uploading.</small></div>
             <div class="f" style="margin-bottom:12px"><label>Description (optional)</label><textarea id="tm_desc" rows="2"></textarea></div>
             <div class="bar"><button class="btn btn-gold" type="submit">Add material</button><span class="msg" id="tmMsg"></span></div>
           </form>
@@ -709,7 +710,26 @@
       Array.prototype.forEach.call(document.querySelectorAll('#topicList .itemrow'), function(x){ x.classList.remove('active'); });
       loadTopicMaterials();
       loadTopicAssignments();
+      loadReuseList();
     }
+
+    // existing materials available to reuse (de-duplicated by underlying file/link)
+    var REUSE = {};
+    function loadReuseList(){
+      client.from('topic_materials').select('id,title,description,url,storage_path').order('created_at',{ascending:false}).then(function(r){
+        REUSE={}; var sel=byId('tm_reuse'); if(!sel) return; sel.innerHTML='<option value="">— none —</option>';
+        var seen={};
+        (r.data||[]).forEach(function(m){
+          var key=m.storage_path||m.url; if(!key||seen[key]) return; seen[key]=true;
+          REUSE[m.id]=m;
+          var o=document.createElement('option'); o.value=m.id; o.textContent=(m.title||'(untitled)')+(m.storage_path?' · private file':' · link'); sel.appendChild(o);
+        });
+      });
+    }
+    byId('tm_reuse').addEventListener('change', function(){
+      var src=REUSE[this.value]; var t=byId('tm_title');
+      if (src && !t.value.trim()) t.value=src.title||'';
+    });
 
     function deleteTopic(t){
       if (!window.confirm('Delete topic “'+t.name+'” and all its materials/assignments?')) return;
@@ -752,7 +772,8 @@
       var hasFile = byId('tm_file').files && byId('tm_file').files[0];
       var bundleFiles = byId('tm_bundle').files;
       var hasBundle = bundleFiles && bundleFiles.length;
-      if (!typedUrl && !hasFile && !hasBundle){ msg.textContent='Pick a material, paste a link, upload a file, OR bundle a multi-page set.'; msg.classList.add('err'); return; }
+      var reuseId = byId('tm_reuse').value;
+      if (!typedUrl && !hasFile && !hasBundle && !reuseId){ msg.textContent='Pick, paste, upload, bundle, OR reuse a material.'; msg.classList.add('err'); return; }
       if (typedUrl && !safeUrl(typedUrl)){ msg.textContent='Link must be http(s) or a .html page path.'; msg.classList.add('err'); return; }
       var btn=byId('tmForm').querySelector('button[type=submit]'); btn.disabled=true;
       var title=byId('tm_title').value.trim(), desc=byId('tm_desc').value.trim()||null;
@@ -763,6 +784,14 @@
           if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
           msg.textContent='✓ Added'; msg.className='msg ok'; byId('tmForm').reset(); byId('tm_url_wrap').style.display='none'; loadTopicMaterials();
         });
+      }
+
+      // 0) Reuse an existing material (attach the same file/link to this topic).
+      if (reuseId && !hasBundle && !hasFile && !typedUrl){
+        var src=REUSE[reuseId];
+        if (!src){ btn.disabled=false; msg.textContent='Pick a material to reuse.'; msg.classList.add('err'); return; }
+        insertRow({ topic_id:CURRENT_TOPIC.id, title:title||src.title, description:desc||src.description||null, url:src.url||null, storage_path:src.storage_path||null });
+        return;
       }
 
       // 1) Bundle a multi-page set -> single private file.
