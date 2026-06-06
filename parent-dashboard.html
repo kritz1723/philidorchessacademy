@@ -216,6 +216,23 @@
             <div class="stat"><div class="label">Leaderboard points</div><div class="num" id="lbPoints">0</div></div>
           </div>
         </div>
+        <div class="cards row-2" id="classroomExtra" style="display:none;margin-top:16px">
+          <div class="card">
+            <div class="label" style="font-size:.82rem;color:var(--ink-soft);margin-bottom:10px">Medals</div>
+            <div style="display:flex;gap:22px;font-family:'Fraunces';font-size:1.4rem">
+              <div>🥇 <b id="medGold">0</b></div>
+              <div>🥈 <b id="medSilver">0</b></div>
+              <div>🥉 <b id="medBronze">0</b></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="stat" style="margin-bottom:12px"><div class="label">Classes invited</div><div class="num" id="classesInvited">0</div></div>
+            <div style="display:flex;gap:22px;font-size:.9rem">
+              <div>Individual · <b id="indClasses">0</b></div>
+              <div>Group · <b id="grpClasses">0</b></div>
+            </div>
+          </div>
+        </div>
 
         <div class="section-title"><span class="ico">🎯</span><h2>Quiz</h2></div>
         <div class="cards row-4">
@@ -240,11 +257,21 @@
               </div>
               <div><div class="chart-box"><canvas id="wldChart"></canvas><div id="chartFallback" class="chart-fallback" style="display:none"></div></div></div>
             </div>
+            <div id="colorSplit" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.86rem">
+                <div>♙ <b>White</b> · <span id="whiteWLD">0-0-0</span> <span style="color:var(--ink-soft)">(<span id="whiteGames">0</span>)</span></div>
+                <div>♟ <b>Black</b> · <span id="blackWLD">0-0-0</span> <span style="color:var(--ink-soft)">(<span id="blackGames">0</span>)</span></div>
+              </div>
+              <div style="font-size:.72rem;color:var(--ink-soft);margin-top:6px">W–L–D by colour</div>
+            </div>
           </div>
           <div class="card">
             <div class="section-title" style="margin:0 0 10px"><span class="ico">🏆</span><h2 style="font-size:1.1rem">Tournament</h2></div>
             <div class="stat" style="margin-bottom:14px"><div class="label">Tournaments played</div><div class="num" id="tourPlayed">0</div></div>
             <div class="stat"><div class="label">Best result</div><div class="num" id="tourBest" style="font-size:1.4rem">—</div></div>
+            <div id="podium" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px;font-size:.9rem">
+              🥇 1st · <b id="t1st">0</b>&nbsp;&nbsp; 🥈 2nd · <b id="t2nd">0</b>&nbsp;&nbsp; 🥉 3rd · <b id="t3rd">0</b>
+            </div>
           </div>
         </div>
 
@@ -498,6 +525,27 @@
       if (!notes.textContent){ notes.innerHTML = '<span class="empty">No notes yet.</span>'; }
       if (s.updated_at){ try { byId('updated').textContent = 'Updated ' + new Date(s.updated_at).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); } catch(e){} }
       drawChart(w,l,d);
+
+      // ---- extra stats (medals, class breakdown, colour split, podium) ----
+      var clx = byId('classroomExtra');
+      if (clx){
+        txt('medGold', s.medals_gold||0); txt('medSilver', s.medals_silver||0); txt('medBronze', s.medals_bronze||0);
+        txt('classesInvited', s.classes_invited||0); txt('indClasses', s.individual_classes||0); txt('grpClasses', s.group_classes||0);
+        var hasMed = (s.medals_gold||0)+(s.medals_silver||0)+(s.medals_bronze||0)+(s.classes_invited||0)+(s.individual_classes||0)+(s.group_classes||0);
+        clx.style.display = hasMed>0 ? '' : 'none';
+      }
+      var cs = byId('colorSplit');
+      if (cs){
+        byId('whiteWLD').textContent = (s.white_wins||0)+'-'+(s.white_losses||0)+'-'+(s.white_draws||0);
+        byId('blackWLD').textContent = (s.black_wins||0)+'-'+(s.black_losses||0)+'-'+(s.black_draws||0);
+        txt('whiteGames', s.white_games||0); txt('blackGames', s.black_games||0);
+        cs.style.display = ((s.white_games||0)+(s.black_games||0))>0 ? '' : 'none';
+      }
+      var pd = byId('podium');
+      if (pd){
+        txt('t1st', s.tournaments_1st||0); txt('t2nd', s.tournaments_2nd||0); txt('t3rd', s.tournaments_3rd||0);
+        pd.style.display = ((s.tournaments_1st||0)+(s.tournaments_2nd||0)+(s.tournaments_3rd||0))>0 ? '' : 'none';
+      }
     }
 
     function drawChart(w,l,d){
