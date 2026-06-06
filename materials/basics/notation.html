@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algebraic Notation — Philidor Chess Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#15203b;--cream:#f5f0e6;--gold:#bf9b54;--green:#1a6b45;--red:#b83232;--amber:#9a6b00;--light-sq:#f0d9b5;--dark-sq:#b58863;--border:#ddd6c8;--muted:#5a6070;--bg:#faf7f2;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--navy);font-family:'Source Serif 4',Georgia,serif;font-weight:300;line-height:1.75;font-size:15px}
+.cover{background:var(--navy);color:var(--cream);padding:28px 44px 24px}
+.cover-eyebrow{font-size:10px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.cover-badge{font-size:10px;letter-spacing:3px;text-transform:uppercase;background:var(--gold);color:var(--navy);display:inline-block;padding:3px 11px;border-radius:2px;margin-bottom:12px;font-weight:600}
+.cover-title{font-family:'Playfair Display',serif;font-size:clamp(22px,4vw,38px);font-weight:900;line-height:1.1;margin-bottom:5px}
+.cover-subtitle{font-size:13px;color:rgba(245,240,230,.5);margin-bottom:0}
+.layout{display:flex;align-items:flex-start;min-height:100vh}
+.sidebar{width:216px;flex-shrink:0;position:sticky;top:0;height:100vh;background:var(--navy);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none}
+.sidebar::-webkit-scrollbar{display:none}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(245,240,230,.1);cursor:pointer}
+.sb-logo-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+.sb-logo-title{font-family:'Playfair Display',serif;font-size:13px;color:var(--cream);line-height:1.3;font-weight:600}
+.sb-section{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(245,240,230,.28);padding:13px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 16px;font-size:12px;color:rgba(245,240,230,.48);background:none;border:none;font-family:'Source Serif 4',serif;transition:color .15s,background .15s;width:100%;text-align:left;line-height:1.3;border-left:2px solid transparent;text-decoration:none;cursor:pointer}
+.nav-item:hover{color:var(--cream);background:rgba(245,240,230,.05);border-left-color:rgba(191,155,84,.35)}
+.nav-item.active{color:var(--cream);background:rgba(191,155,84,.11);border-left-color:var(--gold)}
+.nav-item.active .nn{background:var(--gold);color:var(--navy)}
+.nn{width:19px;height:19px;background:rgba(245,240,230,.13);color:rgba(245,240,230,.55);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0;transition:background .15s,color .15s}
+.content{flex:1;min-width:0}
+.page{max-width:800px;padding:44px 40px}
+.sec-hdr{display:flex;align-items:center;gap:12px;margin:0 0 22px;padding-bottom:11px;border-bottom:2.5px solid var(--navy)}
+.sn{width:32px;height:32px;background:var(--navy);color:var(--cream);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.st{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--navy);flex:1}
+.card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:20px 24px;margin-bottom:13px}
+.card-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:600;margin-bottom:9px;color:var(--navy)}
+.card p{font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:7px}
+.card p:last-child{margin-bottom:0}
+ul.pts{padding-left:18px;margin-top:5px}
+ul.pts li{margin-bottom:4px;font-size:14px;color:var(--muted);line-height:1.7}
+ul.pts li::marker{color:var(--gold)}
+ul.pts li strong{color:var(--navy);font-weight:600}
+.hbox{background:var(--cream);border-left:4px solid var(--gold);padding:11px 15px;border-radius:0 4px 4px 0;font-size:13px;color:var(--navy);margin-top:9px;line-height:1.6}
+.hbox strong{font-weight:600}
+.pg-nav{display:flex;justify-content:space-between;align-items:center;margin-top:36px;padding-top:22px;border-top:1px solid var(--border)}
+.pg-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--navy);text-decoration:none;padding:7px 15px;border:1px solid var(--border);border-radius:4px;background:#fff;font-family:'Source Serif 4',serif;transition:background .15s,border-color .15s}
+.pg-btn:hover{background:var(--cream);border-color:var(--gold)}
+.pg-btn-next{background:var(--navy);color:var(--cream);border-color:var(--navy)}
+.pg-btn-next:hover{background:#1e2f50}
+.two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:10px}
+.three-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:10px}
+.ex-card{border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#fff}
+.ex-head{background:var(--navy);padding:9px 15px;display:flex;align-items:center;gap:8px}
+.ex-sym{font-size:19px;color:var(--cream)}
+.ex-title{font-family:'Playfair Display',serif;font-size:13px;color:var(--cream);font-weight:600}
+.ex-body{padding:13px 15px}
+.ex-board{margin:0 auto 9px;width:fit-content}
+.ex-desc{font-size:12px;color:var(--muted);line-height:1.55}
+.ex-desc strong{color:var(--navy)}
+.ex-answer{margin-top:7px;padding:7px 9px;background:var(--cream);border-left:3px solid var(--gold);border-radius:0 3px 3px 0;font-size:12px;color:var(--navy)}
+.tag{display:inline-block;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:20px;margin-bottom:7px}
+.tag-good{background:#e8f4ec;color:#1a6b45}
+.tag-bad{background:#fdecea;color:#b83232}
+.tag-key{background:#fef3e2;color:#7a4f0a}
+.tag-draw{background:#f0ede8;color:#5a3000}
+.verdict-good{color:var(--green);font-weight:700}
+.verdict-bad{color:var(--red);font-weight:700}
+.verdict-equal{color:var(--amber);font-weight:700}
+.table{width:100%;border-collapse:collapse;font-size:13px;margin-top:9px}
+.table th{background:var(--navy);color:var(--cream);padding:8px 13px;text-align:left;font-family:'Playfair Display',serif;font-size:11px;font-weight:600}
+.table td{padding:8px 13px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.table tr:nth-child(even) td{background:#faf7f2}
+.sym{font-family:monospace;font-size:14px;font-weight:700;color:var(--navy)}
+.step-list{display:flex;flex-direction:column;gap:7px;margin-top:9px}
+.step{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:9px 13px}
+.step-num{width:21px;height:21px;background:var(--navy);color:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:var(--muted);line-height:1.6}
+.step-text strong{color:var(--navy)}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:9px}
+.cmp{border-radius:6px;padding:13px 15px}
+.cmp-title{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;margin-bottom:5px}
+.cmp-desc{font-size:12px;color:var(--muted);line-height:1.55}
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:9px}
+.topic-card{background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;text-decoration:none;display:block;transition:box-shadow .15s,border-color .15s}
+.topic-card:hover{box-shadow:0 3px 12px rgba(21,32,59,.09);border-color:var(--gold)}
+.tc-head{background:var(--navy);padding:11px 16px;display:flex;align-items:center;gap:10px}
+.tc-num{width:24px;height:24px;background:var(--gold);color:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.tc-title{font-family:'Playfair Display',serif;font-size:13px;color:var(--cream);font-weight:600}
+.tc-body{padding:11px 16px}
+.tc-desc{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:8px}
+.tc-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.tc-pill{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--cream);color:var(--muted);border:1px solid var(--border)}
+.tc-arrow{font-size:11px;color:var(--gold);font-weight:600;letter-spacing:1px}
+@media print{.sidebar{display:none}.cover{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+@media(max-width:600px){.layout{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;overflow-x:auto}.sb-logo{display:none}.sb-section{display:none}.nav-item{width:auto;white-space:nowrap;border-left:none;border-bottom:2px solid transparent;padding:7px 11px}.nav-item.active{border-bottom-color:var(--gold);border-left:none}.page{padding:22px 16px}}
+</style>
+</head>
+<body><div class="cover">
+  <div class="cover-eyebrow">Philidor Chess Academy</div>
+  <div class="cover-badge">Basics — 4</div>
+  <div class="cover-title">Algebraic Notation</div>
+  <div class="cover-subtitle">How every chess move is written and read</div>
+</div><div class="layout"><nav class="sidebar">
+  <div class="sb-logo" onclick="location.href='../index.html'">
+    <div class="sb-logo-label">Philidor Chess Academy</div>
+    <div class="sb-logo-title">Chess<br>Academy</div>
+  </div>
+  <div class="sb-section">Basics</div>
+  <a class="nav-item" href="../basics/index.html"><span class="nn">◈</span><span>Overview</span></a>
+  <a class="nav-item" href="../basics/board.html"><span class="nn">1</span><span>The Board</span></a>
+  <a class="nav-item" href="../basics/pieces.html"><span class="nn">2</span><span>The Pieces</span></a>
+  <a class="nav-item" href="../basics/movement.html"><span class="nn">3</span><span>How Pieces Move</span></a>
+  <a class="nav-item active" href="../basics/notation.html"><span class="nn">4</span><span>Algebraic Notation</span></a>
+  <a class="nav-item" href="../basics/check-checkmate.html"><span class="nn">5</span><span>Check &amp; Checkmate</span></a>
+  <a class="nav-item" href="../basics/piece-values.html"><span class="nn">6</span><span>Piece Values</span></a>
+  <a class="nav-item" href="../basics/trades.html"><span class="nn">7</span><span>Good &amp; Bad Trades</span></a>
+  <a class="nav-item" href="../basics/castling.html"><span class="nn">8</span><span>Castling</span></a>
+  <div class="sb-section">Tactics</div>
+  <a class="nav-item" href="../tactics/index.html"><span class="nn">◈</span><span>Overview</span></a>
+  <a class="nav-item" href="../tactics/promotion.html"><span class="nn">1</span><span>Pawn Promotion</span></a>
+  <a class="nav-item" href="../tactics/fork.html"><span class="nn">2</span><span>Fork</span></a>
+  <a class="nav-item" href="../tactics/pin.html"><span class="nn">3</span><span>Pin</span></a>
+  <a class="nav-item" href="../tactics/skewer.html"><span class="nn">4</span><span>Skewer</span></a>
+  <a class="nav-item" href="../tactics/discovered-attack.html"><span class="nn">5</span><span>Discovered Attack</span></a>
+  <div class="sb-section">Concepts</div>
+  <a class="nav-item" href="../concepts/index.html"><span class="nn">◈</span><span>Overview</span></a>
+  <a class="nav-item" href="../concepts/centre.html"><span class="nn">1</span><span>Centre of the Board</span></a>
+  <a class="nav-item" href="../concepts/pawn-promotion.html"><span class="nn">2</span><span>Pawn Promotion</span></a>
+  <a class="nav-item" href="../concepts/underpromotion.html"><span class="nn">3</span><span>Underpromotion</span></a>
+  <a class="nav-item" href="../concepts/stalemate.html"><span class="nn">4</span><span>Stalemate</span></a>
+  <a class="nav-item" href="../concepts/mating-material.html"><span class="nn">5</span><span>Mating Material</span></a>
+  <a class="nav-item" href="../concepts/supported-piece.html"><span class="nn">6</span><span>Supported Piece</span></a>
+  <a class="nav-item" href="../concepts/unsupported-piece.html"><span class="nn">7</span><span>Unsupported Piece</span></a>
+  <a class="nav-item" href="../concepts/sufficient-support.html"><span class="nn">8</span><span>Sufficient Support</span></a>
+</nav>
+<div class="content"><div class="page"><div class="sec-hdr"><div class="sn">4</div><div class="st">Algebraic Notation</div></div>
+<div class="card"><div class="card-title">The universal language of chess</div>
+<p>Standard Algebraic Notation (SAN) records every chess move. Piece symbol + destination square. Pawn moves have no letter — just the square.</p>
+<table class="table">
+<tr><th>Symbol</th><th>Meaning</th><th>Example</th><th>Reads as</th></tr>
+<tr><td><span class="sym">K</span></td><td>King</td><td><span class="sym">Ke2</span></td><td>King to e2</td></tr>
+<tr><td><span class="sym">Q</span></td><td>Queen</td><td><span class="sym">Qd4</span></td><td>Queen to d4</td></tr>
+<tr><td><span class="sym">R</span></td><td>Rook</td><td><span class="sym">Rh1</span></td><td>Rook to h1</td></tr>
+<tr><td><span class="sym">B</span></td><td>Bishop</td><td><span class="sym">Bc4</span></td><td>Bishop to c4</td></tr>
+<tr><td><span class="sym">N</span></td><td>Knight</td><td><span class="sym">Nf3</span></td><td>Knight to f3</td></tr>
+<tr><td><span class="sym">(none)</span></td><td>Pawn</td><td><span class="sym">e4</span></td><td>Pawn to e4</td></tr>
+<tr><td><span class="sym">x</span></td><td>Capture</td><td><span class="sym">Bxf7</span></td><td>Bishop captures on f7</td></tr>
+<tr><td><span class="sym">+</span></td><td>Check</td><td><span class="sym">Qd7+</span></td><td>Queen to d7, giving check</td></tr>
+<tr><td><span class="sym">#</span></td><td>Checkmate</td><td><span class="sym">Qh7#</span></td><td>Queen to h7, checkmate</td></tr>
+<tr><td><span class="sym">O-O</span></td><td>Kingside castle</td><td><span class="sym">O-O</span></td><td>King to g1, Rook to f1</td></tr>
+<tr><td><span class="sym">O-O-O</span></td><td>Queenside castle</td><td><span class="sym">O-O-O</span></td><td>King to c1, Rook to d1</td></tr>
+<tr><td><span class="sym">=Q</span></td><td>Promotion</td><td><span class="sym">e8=Q</span></td><td>Pawn promotes to Queen on e8</td></tr>
+</table>
+<div class="hbox" style="margin-top:11px"><strong>Why N for Knight?</strong> K is taken by the King. The Knight uses its second letter — N.</div></div>
+<div class="card"><div class="card-title">Sample opening — how a game is recorded</div>
+<div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:16px 20px;font-family:monospace;font-size:14px;line-height:2.2;color:var(--navy)">
+<span style="color:var(--muted);font-size:11px;margin-right:4px">1.</span>e4 &nbsp; e5 &nbsp;&nbsp;
+<span style="color:var(--muted);font-size:11px;margin-right:4px">2.</span>Nf3 &nbsp; Nc6 &nbsp;&nbsp;
+<span style="color:var(--muted);font-size:11px;margin-right:4px">3.</span>Bc4 &nbsp; Bc5 &nbsp;&nbsp;
+<span style="color:var(--muted);font-size:11px;margin-right:4px">4.</span>O-O &nbsp; Nf6</div>
+<p style="margin-top:9px;font-size:13px;color:var(--muted)">White's move first, Black's second. Each pair numbered. Move 4: White castles kingside (O-O) for king safety.</p></div><div class="pg-nav"><a class="pg-btn" href="movement.html">← How Pieces Move</a><a class="pg-btn pg-btn-next" href="check-checkmate.html">Check & Checkmate →</a></div></div></div></div><script>
+const PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+function parseFEN(f){const rows=f.split(' ')[0].split('/');const g=[];for(const r of rows){const row=[];for(const c of r){if(/\d/.test(c))for(let i=0;i<+c;i++)row.push('');else row.push(c);}g.push(row);}return g;}
+function board(fen,hi,tg,warn,sz,coords){
+  hi=hi||[];tg=tg||[];warn=warn||[];sz=sz||26;coords=coords!==false;
+  const g=parseFEN(fen),files='abcdefgh';
+  let h='<div style="display:flex;align-items:flex-start">';
+  if(coords){h+='<div style="display:flex;flex-direction:column">';for(let r=0;r<8;r++)h+=`<div style="width:13px;height:${sz}px;line-height:${sz}px;font-size:8px;color:var(--muted);text-align:right;padding-right:2px">${8-r}</div>`;h+='</div>';}
+  h+=`<div><div style="display:grid;grid-template-columns:repeat(8,${sz}px);grid-template-rows:repeat(8,${sz}px);border:1.5px solid var(--navy)">`;
+  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+    const coord=files[c]+(8-r),p=g[r][c],light=(r+c)%2===0,bg=light?'var(--light-sq)':'var(--dark-sq)';
+    let ol='';
+    if(hi.includes(coord))ol='outline:2.5px solid var(--red);outline-offset:-2.5px;';
+    else if(tg.includes(coord))ol='outline:2.5px solid var(--green);outline-offset:-2.5px;';
+    else if(warn.includes(coord))ol='outline:2.5px solid var(--amber);outline-offset:-2.5px;';
+    const isW=p&&p===p.toUpperCase(),col=isW?'#fff':'#1a1410',sh=isW?'0 0 1.5px rgba(0,0,0,.7)':'0 0 1px rgba(255,255,255,.5)';
+    const piece=p?`<span style="color:${col};text-shadow:${sh};font-size:${sz-7}px;line-height:1">${PIECES[p]||''}</span>`:'';
+    h+=`<div style="width:${sz}px;height:${sz}px;background:${bg};${ol}display:flex;align-items:center;justify-content:center">${piece}</div>`;}
+  h+=`</div><div style="display:flex">`;for(const f of files)h+=`<div style="width:${sz}px;text-align:center;font-size:8px;color:var(--muted)">${f}</div>`;
+  h+=`</div></div></div>`;return h;}
+function nb(id,fen,hi,tg,warn,sz,coords){const el=document.getElementById(id);if(el)el.innerHTML=board(fen,hi,tg,warn,sz,coords);}</script></body></html>
