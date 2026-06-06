@@ -78,14 +78,42 @@ function compact(obj) {
   return out;
 }
 
+// Log the page's form structure into the run logs (so we can refine
+// selectors without needing the screenshot artifact).
+async function dumpForm(page) {
+  try {
+    console.log('  page url:', page.url());
+    console.log('  page title:', await page.title());
+    var info = await page.evaluate(function () {
+      function d(el) { return { tag: el.tagName.toLowerCase(), type: el.type || '', name: el.name || '', id: el.id || '', placeholder: el.placeholder || '', autocomplete: el.getAttribute('autocomplete') || '' }; }
+      var inputs = [].slice.call(document.querySelectorAll('input')).map(d);
+      var btns = [].slice.call(document.querySelectorAll('button, a, [role=button]')).slice(0, 40)
+        .map(function (b) { return { tag: b.tagName.toLowerCase(), type: b.getAttribute('type') || '', text: (b.innerText || b.value || '').trim().slice(0, 40) }; })
+        .filter(function (b) { return b.text || b.type; });
+      var frames = [].slice.call(document.querySelectorAll('iframe')).map(function (f) { return f.src || '(no src)'; });
+      return { inputs: inputs, buttons: btns, iframes: frames };
+    });
+    console.log('  inputs:', JSON.stringify(info.inputs));
+    console.log('  buttons:', JSON.stringify(info.buttons));
+    console.log('  iframes:', JSON.stringify(info.iframes));
+  } catch (e) { console.warn('  dumpForm failed: ' + (e && e.message || e)); }
+}
+
 async function login(page) {
   // ChessLang is a SPA with long-lived connections, so 'networkidle'
   // never settles — wait for DOM + the actual login field instead.
-  var emailSel = 'input[type=email], input[name=email], input[name=username], input[autocomplete="username"]';
+  var emailSel = 'input[type=email], input[name=email], input[name=username], input[autocomplete="username"], input[placeholder*="mail" i], input[placeholder*="user" i]';
   var passSel = 'input[type=password], input[name=password], input[autocomplete="current-password"]';
   try {
     await page.goto(CHESSLANG_LOGIN_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForSelector(emailSel, { timeout: 45000 });
+    await page.waitForTimeout(3500);
+    var found = await page.waitForSelector(emailSel, { timeout: 25000 }).then(function () { return true; }).catch(function () { return false; });
+    if (!found) {
+      console.error('  Could not find the login/email field. Page structure:');
+      await dumpForm(page);
+      await shot(page, 'login-error');
+      throw new Error('Login/email field not found — see the logged inputs/buttons above to refine the selector.');
+    }
     await page.fill(emailSel, CHESSLANG_EMAIL);
     await page.fill(passSel, CHESSLANG_PASSWORD);
     var btn = page.locator('button[type=submit], button:has-text("Login"), button:has-text("Log in"), button:has-text("Sign in")').first();
