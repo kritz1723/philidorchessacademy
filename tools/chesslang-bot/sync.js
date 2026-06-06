@@ -79,22 +79,27 @@ function compact(obj) {
 }
 
 async function login(page) {
-  await page.goto(CHESSLANG_LOGIN_URL, { waitUntil: 'networkidle', timeout: 60000 });
-  // Fill email + password using a few common selectors.
+  // ChessLang is a SPA with long-lived connections, so 'networkidle'
+  // never settles — wait for DOM + the actual login field instead.
   var emailSel = 'input[type=email], input[name=email], input[name=username], input[autocomplete="username"]';
   var passSel = 'input[type=password], input[name=password], input[autocomplete="current-password"]';
-  await page.waitForSelector(emailSel, { timeout: 30000 });
-  await page.fill(emailSel, CHESSLANG_EMAIL);
-  await page.fill(passSel, CHESSLANG_PASSWORD);
-  // Submit (button or Enter).
-  var btn = page.locator('button[type=submit], button:has-text("Login"), button:has-text("Log in"), button:has-text("Sign in")').first();
-  if (await btn.count()) { await btn.click(); } else { await page.keyboard.press('Enter'); }
-  await page.waitForLoadState('networkidle', { timeout: 60000 }).catch(function () {});
-  // If a password field is still present, login likely failed.
-  await page.waitForTimeout(2000);
-  if (await page.locator(passSel).count()) {
-    await shot(page, 'login-failed');
-    throw new Error('Login did not complete — check credentials, 2FA/OTP, or the login selectors.');
+  try {
+    await page.goto(CHESSLANG_LOGIN_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForSelector(emailSel, { timeout: 45000 });
+    await page.fill(emailSel, CHESSLANG_EMAIL);
+    await page.fill(passSel, CHESSLANG_PASSWORD);
+    var btn = page.locator('button[type=submit], button:has-text("Login"), button:has-text("Log in"), button:has-text("Sign in")').first();
+    if (await btn.count()) { await btn.click(); } else { await page.keyboard.press('Enter'); }
+    // Wait for the login field to go away (i.e. we navigated past login).
+    await page.waitForSelector(passSel, { state: 'detached', timeout: 45000 }).catch(function () {});
+    await page.waitForTimeout(2500);
+    if (await page.locator(passSel).count()) {
+      await shot(page, 'login-failed');
+      throw new Error('Login did not complete — check credentials or the login selectors (see login-failed.png).');
+    }
+  } catch (e) {
+    await shot(page, 'login-error');
+    throw e;
   }
 }
 
@@ -120,8 +125,8 @@ async function setDateRange(page) {
 
 async function tabText(page, uuid, tab) {
   var url = CHESSLANG_BASE + '/' + uuid + '/' + tab;
-  await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
-  await page.waitForTimeout(1500); // let the SPA render numbers
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForTimeout(2500); // let the SPA fetch + render numbers
   await setDateRange(page);
   return await page.evaluate(function () { return document.body.innerText; });
 }
