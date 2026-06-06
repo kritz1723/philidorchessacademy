@@ -80,6 +80,31 @@
   .panel-head h2{font-size:1.45rem}
   .panel-head p{color:var(--ink-soft);margin-top:3px}
 
+  /* highlights band */
+  .hlbar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .hl{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--soft)}
+  .hl-label{display:block;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)}
+  .hl-num{display:block;font-family:"Fraunces";font-size:1.9rem;line-height:1.1;margin-top:5px}
+  .hl-delta{display:inline-block;font-size:.78rem;font-weight:600;margin-top:5px;min-height:1.1em}
+  .hl-delta.up{color:var(--green)} .hl-delta.down{color:var(--red)} .hl-delta.flat{color:var(--ink-soft)}
+
+  /* progress chart */
+  .trend{margin-bottom:22px}
+  .trend-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .trend-head h3{font-size:1.1rem}
+  .trend-sel{padding:.45em .85em;border:1px solid var(--line);border-radius:10px;background:var(--cream);font-family:inherit;font-size:.85rem;color:var(--ink);cursor:pointer}
+  .trend-box{position:relative;height:230px}
+
+  /* collapsible sections */
+  details.sec{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--soft);margin-bottom:14px;overflow:hidden}
+  details.sec>summary{list-style:none;cursor:pointer;padding:16px 20px;font-family:"Fraunces";font-weight:600;font-size:1.12rem;display:flex;align-items:center;gap:11px;user-select:none}
+  details.sec>summary::-webkit-details-marker{display:none}
+  details.sec>summary::after{content:"▾";margin-left:auto;color:var(--ink-soft);transition:transform .2s}
+  details.sec[open]>summary::after{transform:rotate(180deg)}
+  details.sec .sec-body{padding:2px 20px 20px}
+  details.sec .ico{width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;background:var(--cream);border:1px solid var(--line)}
+  @media (max-width:860px){ .hlbar{grid-template-columns:1fr 1fr} }
+
   /* ---------- section headings ---------- */
   .section-title{display:flex;align-items:center;gap:11px;margin:26px 0 14px}
   .section-title:first-child{margin-top:4px}
@@ -204,79 +229,119 @@
       </div>
 
       <div id="statBody">
-        <div class="section-title"><span class="ico">📋</span><h2>Classroom</h2></div>
-        <div class="cards row-2">
-          <div class="card ring-card">
-            <div class="ring" id="attRing"><b id="attPct">0%</b></div>
-            <div class="meta"><div class="label">Attendance</div><h3>Classes attended</h3>
-              <div class="stat"><div class="num" id="classes">0<small>/0</small></div></div></div>
-          </div>
-          <div class="card">
-            <div class="stat" style="margin-bottom:14px"><div class="label">Hours in classroom</div><div class="num" id="hours">0</div></div>
-            <div class="stat"><div class="label">Leaderboard points</div><div class="num" id="lbPoints">0</div></div>
-          </div>
-        </div>
-        <div class="cards row-2" id="classroomExtra" style="display:none;margin-top:16px">
-          <div class="card">
-            <div class="label" style="font-size:.82rem;color:var(--ink-soft);margin-bottom:10px">Medals</div>
-            <div style="display:flex;gap:22px;font-family:'Fraunces';font-size:1.4rem">
-              <div>🥇 <b id="medGold">0</b></div>
-              <div>🥈 <b id="medSilver">0</b></div>
-              <div>🥉 <b id="medBronze">0</b></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="stat" style="margin-bottom:12px"><div class="label">Classes invited</div><div class="num" id="classesInvited">0</div></div>
-            <div style="display:flex;gap:22px;font-size:.9rem">
-              <div>Individual · <b id="indClasses">0</b></div>
-              <div>Group · <b id="grpClasses">0</b></div>
-            </div>
-          </div>
+        <!-- highlights -->
+        <div class="hlbar" id="highlights">
+          <div class="hl"><span class="hl-label">Attendance</span><span class="hl-num" id="hlAtt">—</span><span class="hl-delta" id="hlAttD"></span></div>
+          <div class="hl"><span class="hl-label">Win rate</span><span class="hl-num" id="hlWin">—</span><span class="hl-delta" id="hlWinD"></span></div>
+          <div class="hl"><span class="hl-label">Leaderboard</span><span class="hl-num" id="hlLb">—</span><span class="hl-delta" id="hlLbD"></span></div>
+          <div class="hl"><span class="hl-label">Games</span><span class="hl-num" id="hlGames">—</span><span class="hl-delta" id="hlGamesD"></span></div>
         </div>
 
-        <div class="section-title"><span class="ico">🎯</span><h2>Quiz</h2></div>
-        <div class="cards row-4">
-          <div class="card stat"><div class="label">Quizzes completed</div><div class="num" id="quizDone">0<small>/0</small></div></div>
-          <div class="card stat"><div class="label">Problems solved</div><div class="num" id="problems">0<small>/0</small></div></div>
-          <div class="card stat"><div class="label">Time taken</div><div class="num" id="quizTime" style="font-size:1.4rem">—</div></div>
-          <div class="card stat"><div class="label">Points scored</div><div class="num" id="quizPoints">0</div></div>
+        <!-- progress over time -->
+        <div class="card trend" id="trendCard" style="display:none">
+          <div class="trend-head">
+            <h3>Progress over time</h3>
+            <select id="trendMetric" class="trend-sel">
+              <option value="leaderboard_points">Leaderboard points</option>
+              <option value="attendance_pct">Attendance %</option>
+              <option value="winrate">Win rate %</option>
+              <option value="games_played">Games played</option>
+            </select>
+          </div>
+          <div class="trend-box"><canvas id="trendChart"></canvas></div>
         </div>
 
-        <div class="section-title"><span class="ico">♟️</span><h2>Game Arena</h2></div>
-        <div class="cards row-2">
-          <div class="card">
-            <div class="game-grid">
-              <div>
-                <div class="stat" style="margin-bottom:14px"><div class="label">Games played</div><div class="num" id="games">0</div></div>
-                <div class="stat"><div class="label">Time spent playing</div><div class="num" id="gameTime" style="font-size:1.4rem">—</div></div>
-                <div class="legend">
-                  <div><span class="dot" style="background:var(--green)"></span> Wins · <b id="wins">0</b> <span id="winPct" style="color:var(--ink-soft)"></span></div>
-                  <div><span class="dot" style="background:var(--red)"></span> Losses · <b id="losses">0</b></div>
-                  <div><span class="dot" style="background:var(--blue)"></span> Draws · <b id="draws">0</b></div>
+        <!-- Classroom -->
+        <details class="sec" open>
+          <summary><span class="ico">📋</span>Classroom</summary>
+          <div class="sec-body">
+            <div class="cards row-2">
+              <div class="card ring-card">
+                <div class="ring" id="attRing"><b id="attPct">0%</b></div>
+                <div class="meta"><div class="label">Attendance</div><h3>Classes attended</h3>
+                  <div class="stat"><div class="num" id="classes">0<small>/0</small></div></div></div>
+              </div>
+              <div class="card">
+                <div class="stat" style="margin-bottom:14px"><div class="label">Hours in classroom</div><div class="num" id="hours">0</div></div>
+                <div class="stat"><div class="label">Leaderboard points</div><div class="num" id="lbPoints">0</div></div>
+              </div>
+            </div>
+            <div class="cards row-2" id="classroomExtra" style="display:none;margin-top:16px">
+              <div class="card">
+                <div class="label" style="font-size:.82rem;color:var(--ink-soft);margin-bottom:10px">Medals</div>
+                <div style="display:flex;gap:22px;font-family:'Fraunces';font-size:1.4rem">
+                  <div>🥇 <b id="medGold">0</b></div>
+                  <div>🥈 <b id="medSilver">0</b></div>
+                  <div>🥉 <b id="medBronze">0</b></div>
                 </div>
               </div>
-              <div><div class="chart-box"><canvas id="wldChart"></canvas><div id="chartFallback" class="chart-fallback" style="display:none"></div></div></div>
-            </div>
-            <div id="colorSplit" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.86rem">
-                <div>♙ <b>White</b> · <span id="whiteWLD">0-0-0</span> <span style="color:var(--ink-soft)">(<span id="whiteGames">0</span>)</span></div>
-                <div>♟ <b>Black</b> · <span id="blackWLD">0-0-0</span> <span style="color:var(--ink-soft)">(<span id="blackGames">0</span>)</span></div>
+              <div class="card">
+                <div class="stat" style="margin-bottom:12px"><div class="label">Classes invited</div><div class="num" id="classesInvited">0</div></div>
+                <div style="display:flex;gap:22px;font-size:.9rem">
+                  <div>Individual · <b id="indClasses">0</b></div>
+                  <div>Group · <b id="grpClasses">0</b></div>
+                </div>
               </div>
-              <div style="font-size:.72rem;color:var(--ink-soft);margin-top:6px">W–L–D by colour</div>
             </div>
           </div>
-          <div class="card">
-            <div class="section-title" style="margin:0 0 10px"><span class="ico">🏆</span><h2 style="font-size:1.1rem">Tournament</h2></div>
-            <div class="stat" style="margin-bottom:14px"><div class="label">Tournaments played</div><div class="num" id="tourPlayed">0</div></div>
-            <div class="stat"><div class="label">Best result</div><div class="num" id="tourBest" style="font-size:1.4rem">—</div></div>
-            <div id="podium" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px;font-size:.9rem">
-              🥇 1st · <b id="t1st">0</b>&nbsp;&nbsp; 🥈 2nd · <b id="t2nd">0</b>&nbsp;&nbsp; 🥉 3rd · <b id="t3rd">0</b>
-            </div>
-          </div>
-        </div>
+        </details>
 
-        <div class="section-title"><span class="ico">📝</span><h2>Coach's notes</h2></div>
-        <div class="card"><div class="notes" id="notes"><span class="empty">No notes yet.</span></div></div>
+        <!-- Quiz -->
+        <details class="sec">
+          <summary><span class="ico">🎯</span>Quiz</summary>
+          <div class="sec-body">
+            <div class="cards row-4">
+              <div class="card stat"><div class="label">Quizzes completed</div><div class="num" id="quizDone">0<small>/0</small></div></div>
+              <div class="card stat"><div class="label">Problems solved</div><div class="num" id="problems">0<small>/0</small></div></div>
+              <div class="card stat"><div class="label">Time taken</div><div class="num" id="quizTime" style="font-size:1.4rem">—</div></div>
+              <div class="card stat"><div class="label">Points scored</div><div class="num" id="quizPoints">0</div></div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Game Arena -->
+        <details class="sec" open>
+          <summary><span class="ico">♟️</span>Game Arena &amp; Tournament</summary>
+          <div class="sec-body">
+            <div class="cards row-2">
+              <div class="card">
+                <div class="game-grid">
+                  <div>
+                    <div class="stat" style="margin-bottom:14px"><div class="label">Games played</div><div class="num" id="games">0</div></div>
+                    <div class="stat"><div class="label">Time spent playing</div><div class="num" id="gameTime" style="font-size:1.4rem">—</div></div>
+                    <div class="legend">
+                      <div><span class="dot" style="background:var(--green)"></span> Wins · <b id="wins">0</b> <span id="winPct" style="color:var(--ink-soft)"></span></div>
+                      <div><span class="dot" style="background:var(--red)"></span> Losses · <b id="losses">0</b></div>
+                      <div><span class="dot" style="background:var(--blue)"></span> Draws · <b id="draws">0</b></div>
+                    </div>
+                  </div>
+                  <div><div class="chart-box"><canvas id="wldChart"></canvas><div id="chartFallback" class="chart-fallback" style="display:none"></div></div></div>
+                </div>
+                <div id="colorSplit" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.86rem">
+                    <div>♙ <b>White</b> · <span id="whiteWLD">0-0-0</span> <span style="color:var(--ink-soft)">(<span id="whiteGames">0</span>)</span></div>
+                    <div>♟ <b>Black</b> · <span id="blackWLD">0-0-0</span> <span style="color:var(--ink-soft)">(<span id="blackGames">0</span>)</span></div>
+                  </div>
+                  <div style="font-size:.72rem;color:var(--ink-soft);margin-top:6px">W–L–D by colour</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="section-title" style="margin:0 0 10px"><span class="ico">🏆</span><h2 style="font-size:1.1rem">Tournament</h2></div>
+                <div class="stat" style="margin-bottom:14px"><div class="label">Tournaments played</div><div class="num" id="tourPlayed">0</div></div>
+                <div class="stat"><div class="label">Best result</div><div class="num" id="tourBest" style="font-size:1.4rem">—</div></div>
+                <div id="podium" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px;font-size:.9rem">
+                  🥇 1st · <b id="t1st">0</b>&nbsp;&nbsp; 🥈 2nd · <b id="t2nd">0</b>&nbsp;&nbsp; 🥉 3rd · <b id="t3rd">0</b>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Coach's notes -->
+        <details class="sec">
+          <summary><span class="ico">📝</span>Coach's notes</summary>
+          <div class="sec-body"><div class="card"><div class="notes" id="notes"><span class="empty">No notes yet.</span></div></div></div>
+        </details>
       </div>
     </div>
   </section>
@@ -353,7 +418,7 @@
     if (!configured || !window.supabase || !window.supabase.createClient){ window.location.href = 'parent-login.html'; return; }
     var client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-    var USER = null, CHILDREN = [], ACTIVE = null, CHART = null;
+    var USER = null, CHILDREN = [], ACTIVE = null, CHART = null, HISTORY = [], TREND = null;
     function txt(id, v){ var e = byId(id); if (e) e.textContent = (v===0||v) ? v : '—'; }
 
     client.auth.getSession().then(function (res){
@@ -505,12 +570,57 @@
       ACTIVE = id; renderKidbar();
       var child = find(id); if (!child) return;
       loadTopics();
-      client.from('student_stats').select('*').eq('child_id', id).maybeSingle().then(function (r){
-        var s = r.data;
+      Promise.all([
+        client.from('student_stats').select('*').eq('child_id', id).maybeSingle(),
+        client.from('stats_history').select('*').eq('child_id', id).order('captured_at', { ascending: true })
+      ]).then(function (out){
+        var s = out[0] && out[0].data;
+        HISTORY = (out[1] && !out[1].error && out[1].data) ? out[1].data : [];
         if (!s){ byId('statBody').style.display='none'; byId('noData').style.display='block'; txt('ndName', child.name); byId('updated').textContent=''; }
         else { byId('noData').style.display='none'; byId('statBody').style.display='block'; render(s); }
       });
     }
+
+    // win rate % from a stats-like object
+    function winRate(o){ var w=o.wins||0,l=o.losses||0,d=o.draws||0,t=w+l+d; return t? Math.round(w/t*100) : 0; }
+
+    function setHighlight(numId, deltaId, val, prev, suffix){
+      suffix = suffix || '';
+      byId(numId).textContent = (val==null) ? '—' : (val + suffix);
+      var e = byId(deltaId);
+      if (val==null || prev==null){ e.textContent=''; e.className='hl-delta'; return; }
+      var diff = val - prev;
+      if (diff === 0){ e.textContent='no change'; e.className='hl-delta flat'; }
+      else if (diff > 0){ e.textContent='▲ +'+diff+suffix; e.className='hl-delta up'; }
+      else { e.textContent='▼ '+diff+suffix; e.className='hl-delta down'; }
+    }
+
+    function renderHighlights(s){
+      // previous = the most recent history snapshot before the current one
+      var prev = HISTORY.length >= 2 ? HISTORY[HISTORY.length-2] : null;
+      setHighlight('hlAtt','hlAttD', (s.attendance_pct==null?null:Number(s.attendance_pct)), prev?prev.attendance_pct:null, '%');
+      setHighlight('hlWin','hlWinD', winRate(s), prev?winRate(prev):null, '%');
+      setHighlight('hlLb','hlLbD', (s.leaderboard_points==null?null:Number(s.leaderboard_points)), prev?prev.leaderboard_points:null, '');
+      setHighlight('hlGames','hlGamesD', (s.games_played==null?null:Number(s.games_played)), prev?prev.games_played:null, '');
+    }
+
+    function drawTrend(){
+      var card = byId('trendCard'), canvas = byId('trendChart');
+      if (!card || !canvas) return;
+      if (!window.Chart || HISTORY.length < 2){ card.style.display='none'; if (TREND){ TREND.destroy(); TREND=null; } return; }
+      card.style.display='';
+      var metric = byId('trendMetric').value;
+      var labels = HISTORY.map(function(h){ try { return new Date(h.captured_at).toLocaleDateString(undefined,{day:'numeric',month:'short'}); } catch(e){ return ''; } });
+      var data = HISTORY.map(function(h){ return metric==='winrate' ? winRate(h) : (h[metric]==null?null:Number(h[metric])); });
+      if (TREND){ TREND.destroy(); TREND=null; }
+      TREND = new Chart(canvas, {
+        type:'line',
+        data:{ labels:labels, datasets:[{ data:data, borderColor:'#bf9b54', backgroundColor:'rgba(191,155,84,.12)', fill:true, tension:.3, pointRadius:3, pointBackgroundColor:'#bf9b54', spanGaps:true }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true, grid:{color:'rgba(21,32,59,.06)'}}, x:{grid:{display:false}} } }
+      });
+    }
+    var trendSel = byId('trendMetric');
+    if (trendSel) trendSel.addEventListener('change', drawTrend);
 
     function render(s){
       var pct = Math.max(0, Math.min(100, Number(s.attendance_pct)||0));
@@ -551,6 +661,9 @@
         txt('t1st', s.tournaments_1st||0); txt('t2nd', s.tournaments_2nd||0); txt('t3rd', s.tournaments_3rd||0);
         pd.style.display = ((s.tournaments_1st||0)+(s.tournaments_2nd||0)+(s.tournaments_3rd||0))>0 ? '' : 'none';
       }
+
+      renderHighlights(s);
+      drawTrend();
     }
 
     function drawChart(w,l,d){
