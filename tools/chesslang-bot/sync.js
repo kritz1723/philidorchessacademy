@@ -29,7 +29,7 @@ const {
   CHESSLANG_PASSWORD,
   CHESSLANG_LOGIN_URL = 'https://app.chesslang.com/',
   CHESSLANG_BASE = 'https://app.chesslang.com/app/reports/student',
-  DATE_FROM = '2026-05-01',
+  DATE_FROM = '2020-01-01',
   DATE_TO = '',
   DRY_RUN = '',
 } = process.env;
