@@ -219,6 +219,7 @@
               <div class="f" id="tm_url_wrap" style="display:none"><label>Custom link / page URL</label><input id="tm_url" type="text" placeholder="materials/session4.html or https://…"></div>
             </div>
             <div class="f" style="margin:12px 0"><label>…or upload your material (private — PDF, HTML page, image)</label><input id="tm_file" type="file" accept=".pdf,.html,.htm,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.ppt,.pptx"><small style="display:block;margin-top:4px;color:#9aa3b8">Stored privately. Only parents you assign this topic to can open it, via a secure link. An uploaded .html opens as a page.</small></div>
+            <div class="f" style="margin:12px 0"><label>…or bundle a multi-page set into ONE private file (select all the .html pages)</label><input id="tm_bundle" type="file" accept=".html,.htm" multiple><small style="display:block;margin-top:4px;color:#9aa3b8">Combines interlinked pages into a single private file; page-to-page links keep working. Never touches the public repo.</small></div>
             <div class="f" style="margin-bottom:12px"><label>Description (optional)</label><textarea id="tm_desc" rows="2"></textarea></div>
             <div class="bar"><button class="btn btn-gold" type="submit">Add material</button><span class="msg" id="tmMsg"></span></div>
           </form>
@@ -652,22 +653,65 @@
     }
 
     // -- materials in a topic --
+    // Read a File as text.
+    function readText(file){ return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){res(String(r.result));}; r.onerror=function(){rej(r.error);}; r.readAsText(file); }); }
+    // Combine several interlinked HTML pages into one self-contained file
+    // with in-file navigation (so it can be served as a single private file).
+    function bundleHtmlFiles(fileList){
+      var files=Array.prototype.slice.call(fileList);
+      files.sort(function(a,b){ var ai=/index\.html?$/i.test(a.name)?0:1, bi=/index\.html?$/i.test(b.name)?0:1; return ai-bi || a.name.localeCompare(b.name); });
+      return Promise.all(files.map(function(f){ return readText(f).then(function(t){ return {name:f.name, html:t}; }); })).then(function(arr){
+        var styleSet=[], sections=[], title='Material', headLinks='';
+        arr.forEach(function(p, i){
+          (p.html.match(/<style[^>]*>[\s\S]*?<\/style>/gi)||[]).forEach(function(b){ var inner=b.replace(/<\/?style[^>]*>/gi,''); if(styleSet.indexOf(inner)===-1) styleSet.push(inner); });
+          var bm=p.html.match(/<body[^>]*>([\s\S]*?)<\/body>/i); var body=bm?bm[1]:p.html;
+          sections.push('<section class="pca-page" data-page="'+esc(p.name)+'">'+body+'</section>');
+          if(i===0){ var tm=p.html.match(/<title>([^<]*)<\/title>/i); if(tm) title=tm[1]; (p.html.match(/<link[^>]+fonts[^>]*>/gi)||[]).forEach(function(l){ headLinks+=l; }); }
+        });
+        var router='<scr'+'ipt>(function(){var pages=[].slice.call(document.querySelectorAll(".pca-page"));function show(n){var f=false;pages.forEach(function(p){var on=p.getAttribute("data-page")===n;p.style.display=on?"block":"none";if(on)f=true;});if(!f&&pages[0])pages[0].style.display="block";window.scrollTo(0,0);}function fh(){var h=decodeURIComponent((location.hash||"").replace(/^#/,"")).replace(/^.*\\//,"");if(/\\.html?$/i.test(h))show(h);else if(pages[0])show(pages[0].getAttribute("data-page"));}document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest(\'a[href$=".html"],a[href$=".htm"]\');if(!a)return;var href=a.getAttribute("href").replace(/^.*\\//,"");e.preventDefault();if(location.hash==="#"+href)fh();else location.hash=href;});window.addEventListener("hashchange",fh);fh();})();</scr'+'ipt>';
+        return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>'+esc(title)+'</title>'+headLinks+'<style>'+styleSet.join('\n')+'\n.pca-page{display:none}</style></head><body>'+sections.join('\n')+router+'</body></html>';
+      });
+    }
+
     byId('tmForm').addEventListener('submit', function(e){
       e.preventDefault(); if (!CURRENT_TOPIC) return;
       var msg=byId('tmMsg'); msg.className='msg';
       var typedUrl=pickedUrl();
       var hasFile = byId('tm_file').files && byId('tm_file').files[0];
-      if (!typedUrl && !hasFile){ msg.textContent='Pick a material, paste a link, OR upload a file.'; msg.classList.add('err'); return; }
+      var bundleFiles = byId('tm_bundle').files;
+      var hasBundle = bundleFiles && bundleFiles.length;
+      if (!typedUrl && !hasFile && !hasBundle){ msg.textContent='Pick a material, paste a link, upload a file, OR bundle a multi-page set.'; msg.classList.add('err'); return; }
       if (typedUrl && !safeUrl(typedUrl)){ msg.textContent='Link must be http(s) or a .html page path.'; msg.classList.add('err'); return; }
-      var btn=byId('tmForm').querySelector('button[type=submit]'); btn.disabled=true; msg.textContent= hasFile?'Uploading…':'Saving…';
+      var btn=byId('tmForm').querySelector('button[type=submit]'); btn.disabled=true;
+      var title=byId('tm_title').value.trim(), desc=byId('tm_desc').value.trim()||null;
+
+      function insertRow(row){
+        return client.from('topic_materials').insert(row).then(function(r){
+          btn.disabled=false;
+          if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
+          msg.textContent='✓ Added'; msg.className='msg ok'; byId('tmForm').reset(); byId('tm_url_wrap').style.display='none'; loadTopicMaterials();
+        });
+      }
+
+      // 1) Bundle a multi-page set -> single private file.
+      if (hasBundle){
+        msg.textContent='Bundling '+bundleFiles.length+' pages & uploading…';
+        bundleHtmlFiles(bundleFiles).then(function(htmlStr){
+          var blob=new Blob([htmlStr], {type:'text/html'});
+          var clean=(title||'material').replace(/[^\w.\-]+/g,'_');
+          var pathName='topics/'+Date.now()+'_'+clean+'.html';
+          return client.storage.from('materials').upload(pathName, blob, { upsert:false, contentType:'text/html' }).then(function(r){ if(r.error) throw r.error; return pathName; });
+        }).then(function(pathName){
+          return insertRow({ topic_id:CURRENT_TOPIC.id, title:title, description:desc, url:null, storage_path:pathName });
+        }).catch(function(err){ btn.disabled=false; msg.textContent='Bundle failed: '+(err.message||err); msg.classList.add('err'); });
+        return;
+      }
+
+      // 2) Single upload, or 3) picked/typed link.
+      msg.textContent = hasFile?'Uploading…':'Saving…';
       uploadFile(byId('tm_file'), 'topics').then(function(up){
-        var row={ topic_id:CURRENT_TOPIC.id, title:byId('tm_title').value.trim(), description:byId('tm_desc').value.trim()||null,
-          url: up ? null : safeUrl(typedUrl), storage_path: up ? up.path : null };
-        return client.from('topic_materials').insert(row);
-      }).then(function(r){
-        btn.disabled=false;
-        if (r.error){ msg.textContent='Error: '+r.error.message; msg.classList.add('err'); return; }
-        msg.textContent='✓ Added'; msg.className='msg ok'; byId('tmForm').reset(); byId('tm_url_wrap').style.display='none'; loadTopicMaterials();
+        return insertRow({ topic_id:CURRENT_TOPIC.id, title:title, description:desc,
+          url: up ? null : safeUrl(typedUrl), storage_path: up ? up.path : null });
       }).catch(function(err){ btn.disabled=false; msg.textContent='Upload failed: '+(err.message||err); msg.classList.add('err'); });
     });
 
