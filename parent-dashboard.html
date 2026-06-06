@@ -367,6 +367,11 @@
       ]).then(function (out){
         var profile = (out[0] && out[0].data) || USER.user_metadata || {};
         var isAdmin = !!(out[1] && out[1].data);
+        // Deactivated accounts are bounced back to the login page.
+        if (out[0] && out[0].data && out[0].data.is_active === false && !isAdmin) {
+          client.auth.signOut().then(function () { window.location.href = 'parent-login.html'; });
+          return;
+        }
         var first = (profile.full_name || '').split(' ')[0] || 'there';
         txt('parentName', first);
         if (isAdmin) byId('adminLink').style.display = 'inline-block';
