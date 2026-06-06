@@ -130,6 +130,10 @@
 
     <!-- ================= STATS ================= -->
     <div id="tab-stats" class="tabpane active">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px">
+        <button class="btn btn-gold btn-xs" id="syncNow" type="button">⟳ Sync from ChessLang now</button>
+        <span class="msg" id="syncMsg"></span>
+      </div>
       <div class="layout">
         <aside class="panel">
           <div class="phead"><h2>Children</h2><button class="btn btn-ghost btn-xs" id="addChildBtn" type="button">+ Add</button></div>
@@ -459,6 +463,18 @@
         loadPeople();
       });
     }
+
+    // ============ SYNC NOW (trigger the ChessLang sync workflow) ============
+    byId('syncNow').addEventListener('click', function(){
+      var btn=byId('syncNow'), msg=byId('syncMsg'); msg.className='msg'; msg.textContent='Starting sync…'; btn.disabled=true;
+      client.functions.invoke('trigger-sync', { body:{} }).then(function(res){
+        btn.disabled=false;
+        if (res.error){ msg.textContent='Could not start: '+(res.error.message||'is the trigger-sync function deployed?'); msg.className='msg err'; return; }
+        var d=res.data||{};
+        if (!d.ok){ msg.textContent='Could not start: '+(d.error||'unknown')+(d.detail?' — '+d.detail:''); msg.className='msg err'; return; }
+        msg.textContent='✓ Sync started — stats refresh in ~1–2 min.'; msg.className='msg ok';
+      }).catch(function(e){ btn.disabled=false; msg.textContent='Could not start: '+(e&&e.message||e); msg.className='msg err'; });
+    });
 
     // ============ PEOPLE (admin: deactivate parents, delete kids) ============
     byId('peopleRefresh').addEventListener('click', loadPeople);
