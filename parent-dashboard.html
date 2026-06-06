@@ -320,12 +320,18 @@
                   </div>
                   <div><div class="chart-box"><canvas id="wldChart"></canvas><div id="chartFallback" class="chart-fallback" style="display:none"></div></div></div>
                 </div>
-                <div id="colorSplit" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.86rem">
-                    <div>♙ <b>White</b> · <span id="whiteWLD">0-0-0</span> <span style="color:var(--ink-soft)">(<span id="whiteGames">0</span>)</span></div>
-                    <div>♟ <b>Black</b> · <span id="blackWLD">0-0-0</span> <span style="color:var(--ink-soft)">(<span id="blackGames">0</span>)</span></div>
+                <div id="colorSplit" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
+                  <div class="label" style="font-size:.8rem;color:var(--ink-soft);margin-bottom:10px">Results by colour</div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div>
+                      <div style="font-weight:600;margin-bottom:4px">♙ White · <span id="whiteGames">0</span> games</div>
+                      <div style="font-size:.84rem;color:var(--ink-soft)" id="whiteBreak">—</div>
+                    </div>
+                    <div>
+                      <div style="font-weight:600;margin-bottom:4px">♟ Black · <span id="blackGames">0</span> games</div>
+                      <div style="font-size:.84rem;color:var(--ink-soft)" id="blackBreak">—</div>
+                    </div>
                   </div>
-                  <div style="font-size:.72rem;color:var(--ink-soft);margin-top:6px">W–L–D by colour</div>
                 </div>
               </div>
               <div class="card">
@@ -672,8 +678,10 @@
       }
       var cs = byId('colorSplit');
       if (cs){
-        byId('whiteWLD').textContent = (s.white_wins||0)+'-'+(s.white_losses||0)+'-'+(s.white_draws||0);
-        byId('blackWLD').textContent = (s.black_wins||0)+'-'+(s.black_losses||0)+'-'+(s.black_draws||0);
+        function breakStr(w,l,d){ w=w||0;l=l||0;d=d||0; var t=w+l+d; function p(x){ return t? Math.round(x/t*100):0; }
+          return 'Win '+w+' ('+p(w)+'%) · Loss '+l+' ('+p(l)+'%) · Draw '+d+' ('+p(d)+'%)'; }
+        byId('whiteBreak').textContent = breakStr(s.white_wins,s.white_losses,s.white_draws);
+        byId('blackBreak').textContent = breakStr(s.black_wins,s.black_losses,s.black_draws);
         txt('whiteGames', s.white_games||0); txt('blackGames', s.black_games||0);
         cs.style.display = ((s.white_games||0)+(s.black_games||0))>0 ? '' : 'none';
       }
