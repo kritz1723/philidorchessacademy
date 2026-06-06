@@ -137,6 +137,7 @@
         <label for="si-pass">Password</label>
         <input id="si-pass" type="password" autocomplete="current-password" required placeholder="••••••••">
       </div>
+      <div style="text-align:right;margin:-6px 0 4px"><a href="#" id="forgotLink" style="font-size:.84rem;color:var(--gold);font-weight:600">Forgot password?</a></div>
       <button class="btn btn-submit" type="submit">Sign In</button>
     </form>
 
@@ -259,9 +260,31 @@
         email: byId('si-email').value.trim(),
         password: byId('si-pass').value
       }).then(function (r) {
-        btn.disabled = false;
+        if (r.error) { btn.disabled = false; showMsg(r.error.message, 'err'); return; }
+        // Block deactivated accounts at the app level.
+        client.from('profiles').select('is_active').eq('id', r.data.user.id).maybeSingle().then(function (p) {
+          btn.disabled = false;
+          if (p.data && p.data.is_active === false) {
+            client.auth.signOut();
+            showMsg('This account has been deactivated. Please contact the academy.', 'err');
+            return;
+          }
+          window.location.href = 'parent-dashboard.html';
+        });
+      });
+    });
+
+    // Forgot password -> email a reset link to the address typed above.
+    var forgot = byId('forgotLink');
+    if (forgot) forgot.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!guard()) return;
+      var email = byId('si-email').value.trim();
+      if (!email) { showMsg('Type your email above first, then tap “Forgot password?”.', 'err'); byId('si-email').focus(); return; }
+      var redirectTo = new URL('reset-password.html', window.location.href).href;
+      client.auth.resetPasswordForEmail(email, { redirectTo: redirectTo }).then(function (r) {
         if (r.error) { showMsg(r.error.message, 'err'); return; }
-        window.location.href = 'parent-dashboard.html';
+        showMsg('Password reset link sent to ' + email + '. Check your inbox (and spam).', 'ok');
       });
     });
 

@@ -78,6 +78,14 @@
   .pill{display:inline-block;font-size:.7rem;font-weight:600;background:var(--cream-2);border-radius:999px;padding:.15em .7em;margin-right:6px}
   .empty{color:var(--ink-soft);font-style:italic;padding:16px 18px}
 
+  /* simple admin tables */
+  .tbl{width:100%;border-collapse:collapse;font-size:.9rem}
+  .tbl th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);padding:10px 12px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .tbl tr:last-child td{border-bottom:none}
+  .badge-on{color:var(--ok);font-weight:600}
+  .badge-off{color:var(--danger);font-weight:600}
+
   /* modal */
   .modal{position:fixed;inset:0;background:rgba(12,19,34,.5);display:none;align-items:center;justify-content:center;z-index:120;padding:20px}
   .modal.open{display:flex}
@@ -117,6 +125,7 @@
       <button data-tab="topics">Topics</button>
       <button data-tab="open">Open Reference Materials</button>
       <button data-tab="products">Products</button>
+      <button data-tab="people">People</button>
     </div>
 
     <!-- ================= STATS ================= -->
@@ -291,6 +300,28 @@
         </aside>
       </div>
     </div>
+
+    <!-- ================= PEOPLE (admin) ================= -->
+    <div id="tab-people" class="tabpane">
+      <div class="layout">
+        <section class="panel addcard">
+          <div class="phead" style="padding:0 0 12px"><h2>Parents</h2><button class="btn btn-ghost btn-xs" id="peopleRefresh" type="button">Refresh</button></div>
+          <p style="color:var(--ink-soft);font-size:.86rem;margin-bottom:10px">Deactivating a parent blocks them from signing in to the portal.</p>
+          <div style="overflow-x:auto"><table class="tbl" id="parentTable">
+            <thead><tr><th>Parent</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </section>
+        <section class="panel addcard">
+          <h2 style="margin-bottom:6px">Children</h2>
+          <p style="color:var(--ink-soft);font-size:.86rem;margin-bottom:10px">Deleting a child permanently removes them and their stats.</p>
+          <div style="overflow-x:auto"><table class="tbl" id="kidTable">
+            <thead><tr><th>Child</th><th>Level</th><th>Parent</th><th style="text-align:right">Action</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </section>
+      </div>
+    </div>
   </div>
 </main>
 
@@ -392,6 +423,54 @@
         loadTopics();
         loadOpen();
         loadProducts();
+        loadPeople();
+      });
+    }
+
+    // ============ PEOPLE (admin: deactivate parents, delete kids) ============
+    byId('peopleRefresh').addEventListener('click', loadPeople);
+    function loadPeople(){
+      client.from('profiles').select('id,full_name,is_active').order('full_name').then(function(r){
+        var tb=byId('parentTable').querySelector('tbody'); tb.innerHTML='';
+        var rows=r.data||[];
+        if (!rows.length){ tb.innerHTML='<tr><td colspan="3" style="padding:14px;color:var(--ink-soft);font-style:italic">No parents yet.</td></tr>'; }
+        rows.forEach(function(p){
+          var active = p.is_active !== false;
+          var tr=document.createElement('tr');
+          tr.innerHTML='<td><b>'+esc(p.full_name||'(no name)')+'</b></td>'+
+            '<td>'+(active?'<span class="badge-on">Active</span>':'<span class="badge-off">Deactivated</span>')+'</td>'+
+            '<td style="text-align:right"><button class="btn '+(active?'btn-danger':'btn-ghost')+' btn-xs" type="button">'+(active?'Deactivate':'Activate')+'</button></td>';
+          tr.querySelector('button').addEventListener('click', function(){
+            client.from('profiles').update({ is_active: !active }).eq('id', p.id).then(function(u){
+              if (u.error){ alert('Error: '+u.error.message); return; }
+              loadPeople();
+            });
+          });
+          tb.appendChild(tr);
+        });
+      });
+      client.from('children').select('id,name,level,parent_id').order('name').then(function(r){
+        var tb=byId('kidTable').querySelector('tbody'); tb.innerHTML='';
+        var rows=r.data||[];
+        if (!rows.length){ tb.innerHTML='<tr><td colspan="4" style="padding:14px;color:var(--ink-soft);font-style:italic">No children yet.</td></tr>'; }
+        rows.forEach(function(c){
+          var par=PARENTS[c.parent_id];
+          var tr=document.createElement('tr');
+          tr.innerHTML='<td><b>'+esc(c.name)+'</b></td><td>'+esc(c.level||'—')+'</td>'+
+            '<td>'+esc(par?(par.full_name||'(no name)'):'—')+'</td>'+
+            '<td style="text-align:right"><button class="btn btn-danger btn-xs" type="button">Delete</button></td>';
+          tr.querySelector('button').addEventListener('click', function(){ deleteKid(c); });
+          tb.appendChild(tr);
+        });
+      });
+    }
+    function deleteKid(c){
+      if (!window.confirm('Delete “'+c.name+'” and all their stats? This cannot be undone.')) return;
+      client.from('student_stats').delete().eq('child_id', c.id).then(function(){
+        client.from('children').delete().eq('id', c.id).then(function(r){
+          if (r.error){ alert('Error: '+r.error.message); return; }
+          loadPeople(); loadChildren();
+        });
       });
     }
 
