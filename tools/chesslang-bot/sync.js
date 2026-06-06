@@ -162,8 +162,8 @@ async function tabText(page, uuid, tab) {
 async function scrapeStudent(page, uuid) {
   var stats = {};
 
-  // ----- Classroom -----
-  var c = await tabText(page, uuid, 'classroom');
+  // ----- Classroom (summary lives on the Overall tab) -----
+  var c = await tabText(page, uuid, 'overall');
   stats.attendance_pct = num(c, /Attendance\s*([\d.]+)\s*%/i);
   var cls = c.match(/Total classes attended\s*(\d+)\s*\/\s*(\d+)/i);
   if (cls) { stats.classes_attended = Number(cls[1]); stats.classes_total = Number(cls[2]); }
