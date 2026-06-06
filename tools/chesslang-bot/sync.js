@@ -167,7 +167,19 @@ async function main() {
   requireEnv();
   var dry = !!DRY_RUN && DRY_RUN !== '0' && DRY_RUN !== 'false';
 
-  var supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  // Trim + sanity-check the secrets (a common mistake is pasting the
+  // wrong text into a secret, which otherwise crashes deep in supabase-js).
+  var sbUrl = String(SUPABASE_URL || '').trim();
+  var sbKey = String(SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  if (!/^https:\/\/[^\s]+\.supabase\.co\/?$/.test(sbUrl)) {
+    console.error('SUPABASE_URL looks wrong. Expected https://<project>.supabase.co — got something else. Re-check the secret.');
+    process.exit(1);
+  }
+  if (sbKey.split('.').length !== 3 || /[^\x00-\x7f]/.test(sbKey)) {
+    console.error('SUPABASE_SERVICE_ROLE_KEY does not look like a Supabase key (a long JWT in 3 dot-separated parts). It looks like the wrong value was pasted into the secret — copy the key from Supabase → Settings → API → "service_role".');
+    process.exit(1);
+  }
+  var supabase = createClient(sbUrl, sbKey, { auth: { persistSession: false } });
   var res = await supabase.from('children').select('id,name,chesslang_id').not('chesslang_id', 'is', null);
   if (res.error) throw res.error;
   var kids = res.data || [];
