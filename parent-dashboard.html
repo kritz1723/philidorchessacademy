@@ -10,26 +10,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#15203b; --ink-deep:#0c1322; --ink-soft:#5a6478;
-    --cream:#f6f2e9; --cream-2:#e9e4d8; --paper:#ffffff; --bg:#f4f1ea;
-    --gold:#bf9b54; --gold-bright:#d8b76a;
+    --ink:#1a2238; --ink-deep:#0e1426; --ink-soft:#6b7589;
+    --cream:#eef1f8; --cream-2:#dde3f1; --paper:#ffffff; --bg:#eceffa;
+    --gold:#c2912e; --gold-bright:#dcb45f;
+    --accent:#4f63e0; --accent-2:#15b4a6; --accent-3:#7c5cf0;
     --mint:#bfe7e0; --lav:#d4d6ec; --pink:#e8cfdd;
-    --green:#2e9e6b; --red:#d05a57; --blue:#5b8def;
-    --line:rgba(21,32,59,.09);
-    --soft:0 1px 2px rgba(12,19,34,.04), 0 16px 36px -26px rgba(12,19,34,.30);
+    --green:#15a06a; --red:#e0625c; --blue:#4f76ef;
+    --line:rgba(26,34,56,.10);
+    --soft:0 1px 2px rgba(14,20,38,.05), 0 18px 40px -26px rgba(14,20,38,.30);
     --maxw:1080px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{color:var(--ink);font-family:"Hanken Grotesk",sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
     background:var(--bg);
     background-image:
-      radial-gradient(80% 55% at 100% 0%, rgba(191,155,84,.10), transparent 60%),
-      radial-gradient(70% 50% at 0% 0%, rgba(191,231,224,.16), transparent 55%);
+      radial-gradient(85% 60% at 100% 0%, rgba(124,92,240,.12), transparent 60%),
+      radial-gradient(70% 55% at 0% 0%, rgba(21,180,166,.14), transparent 58%),
+      radial-gradient(60% 50% at 50% 100%, rgba(79,99,224,.07), transparent 60%);
     background-attachment:fixed}
   h1,h2,h3,h4{font-family:"Fraunces",serif;font-weight:600;line-height:1.1;letter-spacing:-.01em}
   a{color:inherit;text-decoration:none}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
-  .eyebrow{font-family:"Hanken Grotesk";font-weight:600;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+  .eyebrow{font-family:"Hanken Grotesk";font-weight:700;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
 
   /* ---------- header ---------- */
   header{position:sticky;top:0;z-index:50;background:rgba(21,32,59,.96);backdrop-filter:blur(12px);box-shadow:0 1px 0 rgba(12,19,34,.25)}
@@ -77,6 +79,40 @@
   .viewnav button:hover{color:var(--ink)}
   .viewnav button.active{background:var(--ink);color:var(--cream)}
 
+  /* ---------- portal side navigation ---------- */
+  .portal{display:flex;gap:24px;align-items:flex-start}
+  .sidenav{position:sticky;top:78px;flex:none;width:212px;display:flex;flex-direction:column;gap:3px;
+    background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:var(--soft)}
+  .sidenav button{display:flex;align-items:center;gap:11px;border:none;background:transparent;font-family:inherit;
+    font-weight:600;font-size:.92rem;color:var(--ink-soft);padding:.72em .95em;border-radius:11px;cursor:pointer;
+    text-align:left;width:100%;transition:.16s;white-space:nowrap}
+  .sidenav button .ic{font-size:1.05rem;width:1.2em;text-align:center}
+  .sidenav button:hover{background:var(--cream);color:var(--ink)}
+  .sidenav button.active{background:linear-gradient(135deg,var(--accent),var(--accent-3));color:#fff;box-shadow:0 8px 20px -8px rgba(79,99,224,.6)}
+  .sidenav button.active .ic{filter:saturate(0) brightness(2.2)}
+  .portal-content{flex:1;min-width:0}
+
+  /* ---------- around the world ---------- */
+  .fedfeat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:20px}
+  .featc{display:block;background:linear-gradient(160deg,#18233f,#0f1830);color:var(--cream);border-radius:16px;padding:20px;box-shadow:var(--soft);transition:transform .18s}
+  .featc:hover{transform:translateY(-3px)}
+  .featc .tag{font-size:.66rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-bright)}
+  .featc h4{color:#fff;font-size:1.15rem;margin:7px 0 5px}
+  .featc p{color:rgba(246,242,233,.72);font-size:.85rem}
+  .featc .go{margin-top:10px;display:inline-block;font-weight:600;color:var(--gold-bright);font-size:.85rem}
+  .fedgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .fedcard{display:flex;flex-direction:column;gap:3px;background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:14px 16px;box-shadow:var(--soft);position:relative;overflow:hidden;transition:transform .16s,box-shadow .16s}
+  .fedcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold)}
+  .fedcard:hover{transform:translateY(-2px)}
+  .fedcard .flag{font-size:1.3rem;line-height:1}
+  .fedcard h4{font-size:.98rem;margin-top:3px}
+  .fedcard .country{font-size:.76rem;color:var(--ink-soft)}
+  .fedcard .go{margin-top:6px;font-size:.8rem;font-weight:600;color:var(--gold)}
+  .fedhead{display:flex;align-items:baseline;gap:12px;margin:24px 0 12px}
+  .fedhead:first-child{margin-top:0}
+  .fedhead h3{font-size:1.12rem}
+  .fedhead span{flex:1;height:1px;background:var(--line)}
+
   .view{animation:fade .34s ease}
   .view[hidden]{display:none}
   @keyframes fade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
@@ -90,10 +126,10 @@
   .hl{position:relative;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px 18px 16px 21px;box-shadow:var(--soft);transition:transform .18s,box-shadow .18s}
   .hl:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(12,19,34,.05),0 22px 46px -28px rgba(12,19,34,.42)}
   .hl::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold);border-radius:0 4px 4px 0}
-  .hl:nth-child(1)::before{background:#5fc7b6}
+  .hl:nth-child(1)::before{background:var(--accent-2)}
   .hl:nth-child(2)::before{background:var(--green)}
-  .hl:nth-child(3)::before{background:var(--gold)}
-  .hl:nth-child(4)::before{background:#8a8fd6}
+  .hl:nth-child(3)::before{background:var(--accent)}
+  .hl:nth-child(4)::before{background:var(--accent-3)}
   .hl-label{display:block;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)}
   .hl-num{display:block;font-family:"Fraunces";font-size:1.9rem;line-height:1.1;margin-top:5px}
   .hl-delta{display:inline-block;font-size:.78rem;font-weight:600;margin-top:5px;min-height:1.1em}
@@ -134,7 +170,7 @@
 
   .ring-card{display:flex;align-items:center;gap:20px}
   .ring{--pct:0;width:104px;height:104px;border-radius:50%;flex:none;
-    background:conic-gradient(var(--gold) calc(var(--pct)*1%), var(--cream-2) 0);
+    background:conic-gradient(var(--accent) calc(var(--pct)*1%), var(--cream-2) 0);
     display:flex;align-items:center;justify-content:center;position:relative}
   .ring::before{content:"";position:absolute;inset:11px;background:var(--paper);border-radius:50%}
   .ring b{position:relative;font-family:"Fraunces";font-size:1.5rem}
@@ -198,6 +234,10 @@
     .row-4{grid-template-columns:1fr 1fr} .row-2{grid-template-columns:1fr}
     .grid3{grid-template-columns:1fr} .game-grid{grid-template-columns:1fr}
     .viewnav{width:100%}
+    .portal{flex-direction:column}
+    .sidenav{position:static;width:100%;flex-direction:row;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .sidenav::-webkit-scrollbar{display:none}
+    .sidenav button{white-space:nowrap}
   }
 </style>
 </head>
@@ -241,13 +281,16 @@
     <button class="btn btn-gold" id="noKidsAdd" type="button">+ Add a child</button>
   </div>
 
-  <!-- premium segmented navigation -->
-  <nav class="viewnav" id="viewnav" aria-label="Dashboard sections">
-    <button type="button" data-view="overview" class="active">Overview</button>
-    <button type="button" data-view="topics">Topics</button>
-    <button type="button" data-view="library">Library</button>
-    <button type="button" data-view="store">Store</button>
-  </nav>
+  <!-- portal layout: side navigation + content -->
+  <div class="portal">
+    <nav class="sidenav" id="viewnav" aria-label="Dashboard sections">
+      <button type="button" data-view="overview" class="active"><span class="ic">📊</span>Overview</button>
+      <button type="button" data-view="topics"><span class="ic">📘</span>Topics</button>
+      <button type="button" data-view="library"><span class="ic">📚</span>Library</button>
+      <button type="button" data-view="store"><span class="ic">🛍️</span>Store</button>
+      <button type="button" data-view="world"><span class="ic">🌍</span>Around the World</button>
+    </nav>
+    <div class="portal-content">
 
   <!-- ===================== OVERVIEW ===================== -->
   <section class="view" data-view="overview">
@@ -404,6 +447,82 @@
       <div class="card"><span class="empty">No products yet.</span></div>
     </div>
   </section>
+
+  <!-- ===================== AROUND THE WORLD ===================== -->
+  <section class="view" data-view="world" hidden>
+    <div class="panel-head"><h2>Around the World</h2><p>Official chess federations across the globe — explore the game beyond your board.</p></div>
+
+    <div class="fedfeat">
+      <a class="featc" href="https://www.fide.com/" target="_blank" rel="noopener">
+        <span class="tag">World Governing Body</span>
+        <h4>FIDE</h4>
+        <p>The International Chess Federation — ratings, titles and world championships.</p>
+        <span class="go">Visit fide.com →</span>
+      </a>
+      <a class="featc" href="https://new.uschess.org/upcoming-tournaments" target="_blank" rel="noopener">
+        <span class="tag">United States</span>
+        <h4>US Chess — Tournaments</h4>
+        <p>Upcoming over-the-board events across the United States.</p>
+        <span class="go">See upcoming events →</span>
+      </a>
+      <a class="featc" href="https://aicf.in/" target="_blank" rel="noopener">
+        <span class="tag">India</span>
+        <h4>All India Chess Federation</h4>
+        <p>The national body for chess in India — events and ratings.</p>
+        <span class="go">Visit aicf.in →</span>
+      </a>
+    </div>
+
+    <div class="card" style="border-left:4px solid var(--gold);margin-bottom:8px">
+      <p style="color:var(--ink-soft);font-size:.92rem;margin:0">Looking for a federation not listed here? FIDE keeps the authoritative directory of all 190+ member federations —
+        <a href="https://directory.fide.com/list/member_federations/main" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600">browse the full FIDE directory →</a></p>
+    </div>
+
+    <div class="fedhead"><h3>Europe</h3><span></span></div>
+    <div class="fedgrid">
+      <a class="fedcard" href="https://www.englishchess.org.uk/" target="_blank" rel="noopener"><span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><h4>English Chess Federation</h4><span class="country">England</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://www.chessscotland.com/" target="_blank" rel="noopener"><span class="flag">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span><h4>Chess Scotland</h4><span class="country">Scotland</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://www.icu.ie/" target="_blank" rel="noopener"><span class="flag">🇮🇪</span><h4>Irish Chess Union</h4><span class="country">Ireland</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://www.schachbund.de/" target="_blank" rel="noopener"><span class="flag">🇩🇪</span><h4>Deutscher Schachbund</h4><span class="country">Germany</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://www.echecs.asso.fr/" target="_blank" rel="noopener"><span class="flag">🇫🇷</span><h4>Fédération Française des Échecs</h4><span class="country">France</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://www.feda.org/" target="_blank" rel="noopener"><span class="flag">🇪🇸</span><h4>Federación Española de Ajedrez</h4><span class="country">Spain</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://www.federscacchi.it/" target="_blank" rel="noopener"><span class="flag">🇮🇹</span><h4>Federazione Scacchistica Italiana</h4><span class="country">Italy</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://www.schaakbond.nl/" target="_blank" rel="noopener"><span class="flag">🇳🇱</span><h4>Kon. Nederlandse Schaakbond</h4><span class="country">Netherlands</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://sjakk.no/" target="_blank" rel="noopener"><span class="flag">🇳🇴</span><h4>Norges Sjakkforbund</h4><span class="country">Norway</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://schack.se/" target="_blank" rel="noopener"><span class="flag">🇸🇪</span><h4>Sveriges Schackförbund</h4><span class="country">Sweden</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://skak.dk/" target="_blank" rel="noopener"><span class="flag">🇩🇰</span><h4>Dansk Skak Union</h4><span class="country">Denmark</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://skak.is/" target="_blank" rel="noopener"><span class="flag">🇮🇸</span><h4>Skáksamband Íslands</h4><span class="country">Iceland</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://pzszach.pl/" target="_blank" rel="noopener"><span class="flag">🇵🇱</span><h4>Polski Związek Szachowy</h4><span class="country">Poland</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://chess.hu/" target="_blank" rel="noopener"><span class="flag">🇭🇺</span><h4>Magyar Sakkszövetség</h4><span class="country">Hungary</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://chessfed.am/en" target="_blank" rel="noopener"><span class="flag">🇦🇲</span><h4>Chess Federation of Armenia</h4><span class="country">Armenia</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://ruchess.ru/" target="_blank" rel="noopener"><span class="flag">🇷🇺</span><h4>Chess Federation of Russia</h4><span class="country">Russia</span><span class="go">Open site →</span></a>
+    </div>
+
+    <div class="fedhead"><h3>Americas</h3><span></span></div>
+    <div class="fedgrid">
+      <a class="fedcard" href="https://new.uschess.org/" target="_blank" rel="noopener"><span class="flag">🇺🇸</span><h4>US Chess Federation</h4><span class="country">United States</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://www.chess.ca/" target="_blank" rel="noopener"><span class="flag">🇨🇦</span><h4>Chess Federation of Canada</h4><span class="country">Canada</span><span class="go">Open site →</span></a>
+    </div>
+
+    <div class="fedhead"><h3>Asia</h3><span></span></div>
+    <div class="fedgrid">
+      <a class="fedcard" href="https://aicf.in/" target="_blank" rel="noopener"><span class="flag">🇮🇳</span><h4>All India Chess Federation</h4><span class="country">India</span><span class="go">Open site →</span></a>
+    </div>
+
+    <div class="fedhead"><h3>Oceania</h3><span></span></div>
+    <div class="fedgrid">
+      <a class="fedcard" href="https://auschess.org.au/" target="_blank" rel="noopener"><span class="flag">🇦🇺</span><h4>Australian Chess Federation</h4><span class="country">Australia</span><span class="go">Open site →</span></a>
+      <a class="fedcard" href="https://newzealandchess.co.nz/" target="_blank" rel="noopener"><span class="flag">🇳🇿</span><h4>New Zealand Chess Federation</h4><span class="country">New Zealand</span><span class="go">Open site →</span></a>
+    </div>
+
+    <div class="fedhead"><h3>Africa</h3><span></span></div>
+    <div class="fedgrid">
+      <a class="fedcard" href="https://www.chessa.co.za/" target="_blank" rel="noopener"><span class="flag">🇿🇦</span><h4>Chess South Africa</h4><span class="country">South Africa</span><span class="go">Open site →</span></a>
+    </div>
+  </section>
+
+    </div><!-- /portal-content -->
+  </div><!-- /portal -->
 </main>
 
 <!-- add-child modal -->
@@ -459,6 +578,9 @@
       var v = b.getAttribute('data-view');
       Array.prototype.forEach.call(btns, function(x){ x.classList.toggle('active', x===b); });
       Array.prototype.forEach.call(panels, function(p){ p.hidden = (p.getAttribute('data-view')!==v); });
+      // the child selector only applies to per-child views (Overview/Topics)
+      var kb = document.getElementById('kidbar');
+      if (kb) kb.style.display = (v==='overview' || v==='topics') ? '' : 'none';
     });
   })();
 
@@ -717,7 +839,7 @@
       if (TREND){ TREND.destroy(); TREND=null; }
       TREND = new Chart(canvas, {
         type:'line',
-        data:{ labels:labels, datasets:[{ data:data, borderColor:'#bf9b54', backgroundColor:'rgba(191,155,84,.12)', fill:true, tension:.3, pointRadius:3, pointBackgroundColor:'#bf9b54', spanGaps:true }] },
+        data:{ labels:labels, datasets:[{ data:data, borderColor:'#4f63e0', backgroundColor:'rgba(79,99,224,.12)', fill:true, tension:.3, pointRadius:3, pointBackgroundColor:'#4f63e0', spanGaps:true }] },
         options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true, grid:{color:'rgba(21,32,59,.06)'}}, x:{grid:{display:false}} } }
       });
     }
@@ -778,7 +900,7 @@
       }
       canvas.style.display='block'; byId('chartFallback').style.display='none';
       CHART = new Chart(canvas, { type:'doughnut',
-        data:{ labels:['Wins','Losses','Draws'], datasets:[{ data:[w,l,d], backgroundColor:['#2e9e6b','#d05a57','#5b8def'], borderWidth:0 }] },
+        data:{ labels:['Wins','Losses','Draws'], datasets:[{ data:[w,l,d], backgroundColor:['#15a06a','#e0625c','#4f76ef'], borderWidth:0 }] },
         options:{ cutout:'68%', plugins:{legend:{display:false}}, responsive:true, maintainAspectRatio:false } });
     }
 
