@@ -309,7 +309,7 @@
           <div class="phead" style="padding:0 0 12px"><h2>Parents</h2><button class="btn btn-ghost btn-xs" id="peopleRefresh" type="button">Refresh</button></div>
           <p style="color:var(--ink-soft);font-size:.86rem;margin-bottom:10px">Deactivating a parent blocks them from signing in to the portal.</p>
           <div style="overflow-x:auto"><table class="tbl" id="parentTable">
-            <thead><tr><th>Parent</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
+            <thead><tr><th>Parent</th><th>Contact</th><th>Time zone</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
             <tbody></tbody>
           </table></div>
         </section>
@@ -342,6 +342,37 @@
         <button type="submit" class="btn btn-gold">Add child</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- edit child -->
+<div class="modal" id="kEditModal">
+  <div class="modal-card">
+    <h3>Edit child</h3>
+    <div class="f" style="margin-bottom:14px"><label>Child's name</label><input id="ke_name" type="text"></div>
+    <div class="f" style="margin-bottom:14px"><label>Level</label>
+      <select id="ke_level"><option value="">Select…</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+    <div class="modal-msg" id="keMsg"></div>
+    <div class="modal-bar">
+      <button type="button" class="btn btn-ghost" id="keCancel">Cancel</button>
+      <button type="button" class="btn btn-gold" id="keSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- edit parent profile -->
+<div class="modal" id="pEditModal">
+  <div class="modal-card">
+    <h3>Edit parent profile</h3>
+    <div class="f" style="margin-bottom:14px"><label>Full name</label><input id="pe_name" type="text"></div>
+    <div class="f" style="margin-bottom:14px"><label>Preferred name</label><input id="pe_pref" type="text"></div>
+    <div class="f" style="margin-bottom:14px"><label>Contact number</label><input id="pe_phone" type="tel"></div>
+    <div class="f" style="margin-bottom:14px"><label>Time zone</label><input id="pe_tz" type="text" placeholder="e.g. Asia/Kolkata"></div>
+    <div class="modal-msg" id="peMsg"></div>
+    <div class="modal-bar">
+      <button type="button" class="btn btn-ghost" id="peCancel">Cancel</button>
+      <button type="button" class="btn btn-gold" id="peSave">Save</button>
+    </div>
   </div>
 </div>
 
@@ -431,22 +462,28 @@
     // ============ PEOPLE (admin: deactivate parents, delete kids) ============
     byId('peopleRefresh').addEventListener('click', loadPeople);
     function loadPeople(){
-      client.from('profiles').select('id,full_name,is_active').order('full_name').then(function(r){
+      client.from('profiles').select('id,full_name,preferred_name,phone,timezone,is_active').order('full_name').then(function(r){
         var tb=byId('parentTable').querySelector('tbody'); tb.innerHTML='';
         var rows=r.data||[];
-        if (!rows.length){ tb.innerHTML='<tr><td colspan="3" style="padding:14px;color:var(--ink-soft);font-style:italic">No parents yet.</td></tr>'; }
+        if (!rows.length){ tb.innerHTML='<tr><td colspan="5" style="padding:14px;color:var(--ink-soft);font-style:italic">No parents yet.</td></tr>'; }
         rows.forEach(function(p){
           var active = p.is_active !== false;
+          var nm = esc(p.full_name||'(no name)') + (p.preferred_name?' <span style="color:var(--ink-soft)">('+esc(p.preferred_name)+')</span>':'');
           var tr=document.createElement('tr');
-          tr.innerHTML='<td><b>'+esc(p.full_name||'(no name)')+'</b></td>'+
+          tr.innerHTML='<td><b>'+nm+'</b></td>'+
+            '<td>'+esc(p.phone||'—')+'</td>'+
+            '<td>'+esc(p.timezone||'—')+'</td>'+
             '<td>'+(active?'<span class="badge-on">Active</span>':'<span class="badge-off">Deactivated</span>')+'</td>'+
-            '<td style="text-align:right"><button class="btn '+(active?'btn-danger':'btn-ghost')+' btn-xs" type="button">'+(active?'Deactivate':'Activate')+'</button></td>';
-          tr.querySelector('button').addEventListener('click', function(){
+            '<td style="text-align:right;white-space:nowrap">'+
+              '<button class="btn btn-ghost btn-xs edit" type="button">Edit</button> '+
+              '<button class="btn '+(active?'btn-danger':'btn-ghost')+' btn-xs tog" type="button">'+(active?'Deactivate':'Activate')+'</button></td>';
+          tr.querySelector('.tog').addEventListener('click', function(){
             client.from('profiles').update({ is_active: !active }).eq('id', p.id).then(function(u){
               if (u.error){ alert('Error: '+u.error.message); return; }
               loadPeople();
             });
           });
+          tr.querySelector('.edit').addEventListener('click', function(){ openParentEdit(p); });
           tb.appendChild(tr);
         });
       });
@@ -459,12 +496,47 @@
           var tr=document.createElement('tr');
           tr.innerHTML='<td><b>'+esc(c.name)+'</b></td><td>'+esc(c.level||'—')+'</td>'+
             '<td>'+esc(par?(par.full_name||'(no name)'):'—')+'</td>'+
-            '<td style="text-align:right"><button class="btn btn-danger btn-xs" type="button">Delete</button></td>';
-          tr.querySelector('button').addEventListener('click', function(){ deleteKid(c); });
+            '<td style="text-align:right;white-space:nowrap">'+
+              '<button class="btn btn-ghost btn-xs edit" type="button">Edit</button> '+
+              '<button class="btn btn-danger btn-xs del" type="button">Delete</button></td>';
+          tr.querySelector('.edit').addEventListener('click', function(){ openChildEdit(c); });
+          tr.querySelector('.del').addEventListener('click', function(){ deleteKid(c); });
           tb.appendChild(tr);
         });
       });
     }
+
+    // edit child (name + level)
+    var KID_EDIT=null;
+    function openChildEdit(c){ KID_EDIT=c; byId('ke_name').value=c.name||''; byId('ke_level').value=c.level||''; byId('keMsg').textContent=''; byId('kEditModal').classList.add('open'); }
+    byId('keCancel').addEventListener('click', function(){ byId('kEditModal').classList.remove('open'); });
+    byId('kEditModal').addEventListener('click', function(e){ if(e.target===byId('kEditModal')) byId('kEditModal').classList.remove('open'); });
+    byId('keSave').addEventListener('click', function(){
+      if (!KID_EDIT) return;
+      var name=byId('ke_name').value.trim(); var msg=byId('keMsg');
+      if (!name){ msg.textContent='Name is required.'; return; }
+      msg.style.color='var(--ink-soft)'; msg.textContent='Saving…';
+      client.from('children').update({ name:name, level:byId('ke_level').value||null }).eq('id', KID_EDIT.id).then(function(r){
+        if (r.error){ msg.style.color='var(--danger)'; msg.textContent='Error: '+r.error.message; return; }
+        byId('kEditModal').classList.remove('open'); loadPeople(); loadChildren();
+      });
+    });
+
+    // edit parent profile (name, preferred, phone, timezone)
+    var PAR_EDIT=null;
+    function openParentEdit(p){ PAR_EDIT=p; byId('pe_name').value=p.full_name||''; byId('pe_pref').value=p.preferred_name||''; byId('pe_phone').value=p.phone||''; byId('pe_tz').value=p.timezone||''; byId('peMsg').textContent=''; byId('pEditModal').classList.add('open'); }
+    byId('peCancel').addEventListener('click', function(){ byId('pEditModal').classList.remove('open'); });
+    byId('pEditModal').addEventListener('click', function(e){ if(e.target===byId('pEditModal')) byId('pEditModal').classList.remove('open'); });
+    byId('peSave').addEventListener('click', function(){
+      if (!PAR_EDIT) return;
+      var msg=byId('peMsg'); msg.style.color='var(--ink-soft)'; msg.textContent='Saving…';
+      var patch={ full_name:byId('pe_name').value.trim()||null, preferred_name:byId('pe_pref').value.trim()||null,
+        phone:byId('pe_phone').value.trim()||null, timezone:byId('pe_tz').value.trim()||null };
+      client.from('profiles').update(patch).eq('id', PAR_EDIT.id).then(function(r){
+        if (r.error){ msg.style.color='var(--danger)'; msg.textContent='Error: '+r.error.message; return; }
+        byId('pEditModal').classList.remove('open'); loadParents(function(){ loadPeople(); });
+      });
+    });
     function deleteKid(c){
       if (!window.confirm('Delete “'+c.name+'” and all their stats? This cannot be undone.')) return;
       client.from('student_stats').delete().eq('child_id', c.id).then(function(){
