@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Parent Login | Philidor Chess Academy</title>
-<meta name="description" content="Parent portal for Philidor Chess Academy — sign in or create an account to track your child's chess journey.">
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -266,7 +266,7 @@
           btn.disabled = false;
           if (p.data && p.data.is_active === false) {
             client.auth.signOut();
-            showMsg('This account has been deactivated. Please contact the academy.', 'err');
+            showMsg('Your account is awaiting approval by the academy. You’ll be able to sign in once it’s approved.', 'err');
             return;
           }
           window.location.href = 'parent-dashboard.html';
@@ -304,12 +304,11 @@
       }).then(function (r) {
         btn.disabled = false;
         if (r.error) { showMsg(r.error.message, 'err'); return; }
-        if (r.data && r.data.session) {
-          window.location.href = 'parent-dashboard.html';
-        } else {
-          showMsg('Account created! Check your email to confirm, then sign in.', 'ok');
-          setTimeout(function () { window.pcaSetMode('signin'); }, 1500);
-        }
+        // New accounts are pending until the academy approves them — never
+        // drop the visitor straight into the portal on signup.
+        if (r.data && r.data.session) { client.auth.signOut(); }
+        showMsg('Account created! Your access is pending approval by the academy. You’ll be able to sign in once it’s approved.', 'ok');
+        setTimeout(function () { window.pcaSetMode('signin'); }, 2800);
       });
     });
   })();
