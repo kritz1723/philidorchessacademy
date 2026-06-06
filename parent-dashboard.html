@@ -20,7 +20,12 @@
     --maxw:1080px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:"Hanken Grotesk",sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  body{color:var(--ink);font-family:"Hanken Grotesk",sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+    background:var(--bg);
+    background-image:
+      radial-gradient(80% 55% at 100% 0%, rgba(191,155,84,.10), transparent 60%),
+      radial-gradient(70% 50% at 0% 0%, rgba(191,231,224,.16), transparent 55%);
+    background-attachment:fixed}
   h1,h2,h3,h4{font-family:"Fraunces",serif;font-weight:600;line-height:1.1;letter-spacing:-.01em}
   a{color:inherit;text-decoration:none}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
@@ -82,7 +87,13 @@
 
   /* highlights band */
   .hlbar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
-  .hl{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--soft)}
+  .hl{position:relative;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px 18px 16px 21px;box-shadow:var(--soft);transition:transform .18s,box-shadow .18s}
+  .hl:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(12,19,34,.05),0 22px 46px -28px rgba(12,19,34,.42)}
+  .hl::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold);border-radius:0 4px 4px 0}
+  .hl:nth-child(1)::before{background:#5fc7b6}
+  .hl:nth-child(2)::before{background:var(--green)}
+  .hl:nth-child(3)::before{background:var(--gold)}
+  .hl:nth-child(4)::before{background:#8a8fd6}
   .hl-label{display:block;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)}
   .hl-num{display:block;font-family:"Fraunces";font-size:1.9rem;line-height:1.1;margin-top:5px}
   .hl-delta{display:inline-block;font-size:.78rem;font-weight:600;margin-top:5px;min-height:1.1em}
@@ -167,6 +178,21 @@
   .modal-msg{font-size:.85rem;color:var(--red);min-height:1.1em;margin-top:4px}
 
   footer{color:var(--ink-soft);text-align:center;padding:26px;font-size:.84rem}
+
+  /* admin preview banner */
+  .previewbar{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    background:linear-gradient(90deg,#10192f,#27345a);color:var(--cream);
+    padding:10px 22px;font-size:.86rem;font-weight:600}
+  .previewbar b{color:#fff}
+  .previewbar a{color:var(--gold-bright);font-weight:700}
+  .previewbar a:hover{text-decoration:underline}
+
+  /* coach note entries */
+  #notes .note-entry{display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line)}
+  #notes .note-entry:last-child{border-bottom:none;padding-bottom:0}
+  #notes .note-entry:first-child{padding-top:0}
+  #notes .note-when{flex:none;width:96px;font-size:.76rem;color:var(--gold);font-weight:700;padding-top:1px;letter-spacing:.01em}
+  #notes .note-text{flex:1;white-space:pre-wrap;color:var(--ink)}
 
   @media (max-width:860px){
     .row-4{grid-template-columns:1fr 1fr} .row-2{grid-template-columns:1fr}
@@ -445,6 +471,9 @@
     var client = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
     var USER = null, CHILDREN = [], ACTIVE = null, CHART = null, HISTORY = [], TREND = null, PROFILE = {};
+    // preview: an admin can open ?as=<child_id> to see a parent's dashboard
+    var PREVIEW_CHILD = new URLSearchParams(location.search).get('as');
+    var VIEW_PARENT = null, PREVIEW = false;
     function txt(id, v){ var e = byId(id); if (e) e.textContent = (v===0||v) ? v : '—'; }
 
     client.auth.getSession().then(function (res){
@@ -457,22 +486,49 @@
         client.from('admins').select('user_id').eq('user_id', USER.id).maybeSingle()
       ]).then(function (out){
         var profile = (out[0] && out[0].data) || USER.user_metadata || {};
-        PROFILE = profile;
         var isAdmin = !!(out[1] && out[1].data);
         // Deactivated accounts are bounced back to the login page.
         if (out[0] && out[0].data && out[0].data.is_active === false && !isAdmin) {
           client.auth.signOut().then(function () { window.location.href = 'parent-login.html'; });
           return;
         }
-        var first = (profile.preferred_name || '').trim() || (profile.full_name || '').split(' ')[0] || 'there';
-        txt('parentName', first);
         if (isAdmin) byId('adminLink').style.display = 'inline-block';
-        gate.style.display = 'none'; app.style.display = 'block';
-        loadChildren();
-        loadOpenMaterials();
-        loadProducts();
+
+        // ---- admin preview: load the target child's parent context ----
+        if (PREVIEW_CHILD && isAdmin) {
+          client.from('children').select('id,parent_id,name').eq('id', PREVIEW_CHILD).maybeSingle().then(function (cr) {
+            var child = cr.data;
+            if (!child) { PROFILE = profile; VIEW_PARENT = USER.id; finishInit(profile); return; }
+            PREVIEW = true; VIEW_PARENT = child.parent_id; ACTIVE = child.id;
+            client.from('profiles').select('*').eq('id', VIEW_PARENT).maybeSingle().then(function (pr) {
+              var pp = pr.data || {}; PROFILE = pp; showPreviewBanner(pp); finishInit(pp);
+            });
+          });
+          return;
+        }
+        PROFILE = profile; VIEW_PARENT = USER.id; finishInit(profile);
       }).catch(function (e){ gate.textContent = 'Could not load: ' + (e.message || e); });
     });
+
+    function finishInit(profile){
+      var first = (profile.preferred_name || '').trim() || (profile.full_name || '').split(' ')[0] || 'there';
+      txt('parentName', first);
+      gate.style.display = 'none'; app.style.display = 'block';
+      loadChildren();
+      loadOpenMaterials();
+      loadProducts();
+    }
+
+    function showPreviewBanner(pp){
+      document.body.classList.add('is-preview');
+      var who = (pp.full_name || pp.preferred_name || 'this parent');
+      var bar = document.createElement('div'); bar.className = 'previewbar';
+      bar.innerHTML = '<span>👁 <b>Admin preview</b> — viewing ' + esc2(who) + '’s dashboard (read-only)</span>' +
+        '<a href="admin.html">← Back to admin</a>';
+      document.body.insertBefore(bar, document.body.firstChild);
+      // hide parent-only self-service controls during preview
+      ['editProfileBtn'].forEach(function(id){ var e=byId(id); if (e) e.style.display='none'; });
+    }
 
     function esc2(s){ return s ? String(s).replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}) : ''; }
 
@@ -561,7 +617,7 @@
     }
 
     function loadChildren(){
-      client.from('children').select('*').eq('parent_id', USER.id).order('created_at').then(function (r){
+      client.from('children').select('*').eq('parent_id', VIEW_PARENT).order('created_at').then(function (r){
         CHILDREN = r.data || [];
         renderKidbar();
         if (!CHILDREN.length){
@@ -586,17 +642,36 @@
         t.addEventListener('click', function (){ selectChild(c.id); });
         bar.appendChild(t);
       });
-      var add = document.createElement('button');
-      add.className = 'addkid'; add.type='button'; add.textContent = '+ Add child';
-      add.addEventListener('click', openModal);
-      bar.appendChild(add);
+      if (!PREVIEW){
+        var add = document.createElement('button');
+        add.className = 'addkid'; add.type='button'; add.textContent = '+ Add child';
+        add.addEventListener('click', openModal);
+        bar.appendChild(add);
+      }
     }
     function esc(s){ return s ? String(s).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];}) : ''; }
+
+    function loadNotes(childId){
+      var box = byId('notes'); if (!box) return;
+      box.innerHTML = '<span class="empty">Loading…</span>';
+      client.from('coach_notes').select('*').eq('child_id', childId).order('created_at',{ascending:false}).then(function(r){
+        var rows = (r.data)||[];
+        if (r.error || !rows.length){ box.innerHTML='<span class="empty">No notes yet.</span>'; return; }
+        box.innerHTML='';
+        rows.forEach(function(n){
+          var when=''; try{ when=new Date(n.created_at).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); }catch(e){}
+          var d=document.createElement('div'); d.className='note-entry';
+          d.innerHTML='<div class="note-when">'+esc2(when)+'</div><div class="note-text">'+esc2(n.body)+'</div>';
+          box.appendChild(d);
+        });
+      });
+    }
 
     function selectChild(id){
       ACTIVE = id; renderKidbar();
       var child = find(id); if (!child) return;
       loadTopics();
+      loadNotes(id);
       Promise.all([
         client.from('student_stats').select('*').eq('child_id', id).maybeSingle(),
         client.from('stats_history').select('*').eq('child_id', id).order('captured_at', { ascending: true })
@@ -662,9 +737,6 @@
       txt('wins',w); txt('losses',l); txt('draws',d);
       byId('winPct').textContent = tot>0 ? '· ' + Math.round(w/tot*100) + '%' : '';
       txt('tourPlayed', s.tournaments_played||0); txt('tourBest', s.tournament_best||'—');
-      var notes = byId('notes');
-      notes.textContent = (s.coach_notes && s.coach_notes.trim()) ? s.coach_notes : '';
-      if (!notes.textContent){ notes.innerHTML = '<span class="empty">No notes yet.</span>'; }
       if (s.updated_at){ try { byId('updated').textContent = 'Updated ' + new Date(s.updated_at).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); } catch(e){} }
       drawChart(w,l,d);
 

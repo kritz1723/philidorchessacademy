@@ -53,6 +53,21 @@
   .plist li.active{background:var(--cream-2);border-left:3px solid var(--gold)}
   .plist b{display:block}
   .plist span{font-size:.8rem;color:var(--ink-soft)}
+  /* compact child selector bar */
+  .childbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;margin-bottom:16px}
+  .childbar-lbl{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+  .childbar-sel{flex:1;min-width:180px;max-width:340px;padding:.55em .85em;border:1px solid var(--line);border-radius:10px;background:var(--cream);font-family:inherit;font-size:.95rem;font-weight:600;color:var(--ink)}
+  .childbar-sel:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(191,155,84,.18)}
+  #previewBtn{margin-left:auto}
+
+  /* coach notes entries */
+  .notelist{list-style:none;margin-top:12px}
+  .notelist li{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+  .notelist li:last-child{border-bottom:none}
+  .notelist .nbody{flex:1;white-space:pre-wrap}
+  .notelist .nwhen{font-size:.74rem;color:var(--ink-soft);white-space:nowrap}
+  .notelist .ndel{background:none;border:none;color:var(--danger);cursor:pointer;font-size:.9rem;line-height:1;padding:2px 4px}
+  .notelist .nempty{color:var(--ink-soft);font-style:italic;padding:8px 0}
   .form{padding:20px}
   .grp{margin:18px 0 6px;font-family:"Fraunces";font-size:1rem;color:var(--gold)}
   .fields{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -134,13 +149,15 @@
         <button class="btn btn-gold btn-xs" id="syncNow" type="button">⟳ Sync from ChessLang now</button>
         <span class="msg" id="syncMsg"></span>
       </div>
+      <div class="childbar panel">
+        <label class="childbar-lbl" for="childSelect">Child</label>
+        <select id="childSelect" class="childbar-sel"><option value="">Select a child…</option></select>
+        <button class="btn btn-ghost btn-xs" id="addChildBtn" type="button">+ Add</button>
+        <a class="btn btn-gold btn-xs" id="previewBtn" href="#" target="_blank" rel="noopener" style="display:none">👁 Preview as parent</a>
+      </div>
       <div class="layout">
-        <aside class="panel">
-          <div class="phead"><h2>Children</h2><button class="btn btn-ghost btn-xs" id="addChildBtn" type="button">+ Add</button></div>
-          <ul class="plist" id="clist"></ul>
-        </aside>
         <section class="panel">
-          <div id="noSel" class="form"><p style="color:var(--ink-soft)">← Select a child to edit stats, or <b>+ Add</b> a child and assign to a parent.</p></div>
+          <div id="noSel" class="form"><p style="color:var(--ink-soft)">Pick a child above to edit stats, or <b>+ Add</b> a child and assign to a parent.</p></div>
           <form id="form" class="form hidden">
             <h2 id="editingFor" style="font-size:1.2rem"></h2>
             <div class="grp">ChessLang link</div>
@@ -183,9 +200,16 @@
               <div class="f"><label>Tournaments played</label><input type="number" id="tournaments_played" min="0"></div>
               <div class="f"><label>Best result</label><input type="text" id="tournament_best"></div>
             </div>
-            <div class="grp">Coach's notes</div>
-            <div class="fields"><div class="f full"><textarea id="coach_notes" rows="3"></textarea></div></div>
             <div class="bar"><button class="btn btn-gold" type="submit">Save changes</button><span class="msg" id="msg"></span></div>
+
+            <div class="grp">Coach's notes</div>
+            <p style="color:var(--ink-soft);font-size:.85rem;margin:-2px 0 10px">Each note is saved as a dated entry the parent can see — like a running record.</p>
+            <div class="f full"><textarea id="noteBody" rows="2" placeholder="Write a note about today's class, progress, homework…"></textarea></div>
+            <div style="display:flex;gap:12px;align-items:center;margin:8px 0 4px">
+              <button class="btn btn-ghost btn-xs" type="button" id="addNote">+ Add note</button>
+              <span class="msg" id="noteMsg"></span>
+            </div>
+            <ul class="notelist" id="noteList"></ul>
           </form>
         </section>
       </div>
@@ -443,6 +467,7 @@
     client.auth.getSession().then(function(res){
       var session = res.data && res.data.session;
       if (!session){ window.location.href='parent-login.html'; return; }
+      ADMIN_USER = session.user;
       client.from('admins').select('user_id').eq('user_id', session.user.id).maybeSingle().then(function(a){
         byId('gate').classList.add('hidden');
         if (!(a && a.data)){ byId('denied').classList.remove('hidden'); return; }
@@ -451,7 +476,7 @@
       });
     });
 
-    var PARENTS = {}, CHILDREN = [];
+    var PARENTS = {}, CHILDREN = [], ADMIN_USER = null;
 
     function init(){
       loadMaterialList('tm_pick');
@@ -594,7 +619,7 @@
     var NUM = ['attendance_pct','classes_attended','classes_total','hours_in_classroom','leaderboard_points',
       'quizzes_completed','quizzes_total','problems_solved','problems_total','quiz_points',
       'games_played','wins','losses','draws','tournaments_played'];
-    var TXT = ['quiz_time_taken','game_time','tournament_best','coach_notes'];
+    var TXT = ['quiz_time_taken','game_time','tournament_best'];
     var ALL = NUM.concat(TXT);
     var selectedChild = null;
 
@@ -610,34 +635,69 @@
       });
     }
 
-    function loadChildren(){
+    function loadChildren(keepId){
       client.from('children').select('id,parent_id,name,level,chesslang_id').order('name').then(function(r){
         CHILDREN = r.data || [];
-        var list = byId('clist'); list.innerHTML='';
-        if (!CHILDREN.length){ list.innerHTML='<li style="cursor:default"><span>No children yet. Click + Add.</span></li>'; }
+        var sel = byId('childSelect'); sel.innerHTML='<option value="">Select a child…</option>';
         CHILDREN.forEach(function(c){
           var parent=PARENTS[c.parent_id];
-          var li=document.createElement('li');
-          li.innerHTML='<b>'+esc(c.name)+'</b><span>'+(c.level?esc(c.level)+' · ':'')+'Parent: '+esc(parent?(parent.full_name||'(no name)'):'—')+'</span>';
-          li.addEventListener('click', function(){ selectChild(c, li); });
-          list.appendChild(li);
+          var o=document.createElement('option'); o.value=c.id;
+          o.textContent = c.name + (parent ? ' — '+(parent.full_name||'(no name)') : '');
+          sel.appendChild(o);
         });
+        if (keepId && find(keepId)){ sel.value = keepId; selectChild(keepId); }
       });
     }
+    function find(id){ for (var i=0;i<CHILDREN.length;i++){ if (CHILDREN[i].id===id) return CHILDREN[i]; } return null; }
 
-    function selectChild(c, li){
+    byId('childSelect').addEventListener('change', function(){ selectChild(this.value); });
+
+    function selectChild(id){
+      var c = find(id);
+      if (!c){ selectedChild=null; byId('form').classList.add('hidden'); byId('noSel').classList.remove('hidden'); byId('previewBtn').style.display='none'; return; }
       selectedChild = c;
-      Array.prototype.forEach.call(document.querySelectorAll('#clist li'), function(x){ x.classList.remove('active'); });
-      li.classList.add('active');
       byId('noSel').classList.add('hidden'); byId('form').classList.remove('hidden');
       byId('editingFor').textContent='Editing: '+c.name; byId('msg').textContent='';
       byId('clMsg').textContent=''; byId('clMsg').className='msg';
       byId('chesslang_id').value = c.chesslang_id || '';
+      var pv = byId('previewBtn'); pv.href = 'parent-dashboard.html?as=' + encodeURIComponent(c.id); pv.style.display='inline-block';
       ALL.forEach(function(k){ byId(k).value=''; });
       client.from('student_stats').select('*').eq('child_id', c.id).maybeSingle().then(function(r){
         var s=r.data; if (s) ALL.forEach(function(k){ if (s[k]!==null&&s[k]!==undefined) byId(k).value=s[k]; });
       });
+      loadNotes(c.id);
     }
+
+    // ---- coach notes (dated entries) ----
+    function fmtWhen(iso){ try { return new Date(iso).toLocaleString(undefined,{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); } catch(e){ return ''; } }
+    function loadNotes(childId){
+      var ul = byId('noteList'); ul.innerHTML='<li class="nempty">Loading…</li>';
+      client.from('coach_notes').select('*').eq('child_id', childId).order('created_at',{ascending:false}).then(function(r){
+        var rows = (r.data)||[];
+        if (r.error){ ul.innerHTML='<li class="nempty">'+esc(r.error.message)+'</li>'; return; }
+        if (!rows.length){ ul.innerHTML='<li class="nempty">No notes yet.</li>'; return; }
+        ul.innerHTML='';
+        rows.forEach(function(n){
+          var li=document.createElement('li');
+          li.innerHTML='<span class="nbody">'+esc(n.body)+'</span><span class="nwhen">'+fmtWhen(n.created_at)+'</span><button class="ndel" title="Delete" type="button">✕</button>';
+          li.querySelector('.ndel').addEventListener('click', function(){
+            if (!confirm('Delete this note?')) return;
+            client.from('coach_notes').delete().eq('id', n.id).then(function(d){ if (!d.error) loadNotes(childId); });
+          });
+          ul.appendChild(li);
+        });
+      });
+    }
+    byId('addNote').addEventListener('click', function(){
+      if (!selectedChild) return;
+      var body = byId('noteBody').value.trim(), msg=byId('noteMsg'); msg.className='msg';
+      if (!body){ msg.textContent='Write something first.'; msg.className='msg err'; return; }
+      msg.textContent='Saving…';
+      client.from('coach_notes').insert({ child_id:selectedChild.id, body:body, author_id:(ADMIN_USER&&ADMIN_USER.id)||null }).then(function(r){
+        if (r.error){ msg.textContent='Error: '+r.error.message; msg.className='msg err'; return; }
+        byId('noteBody').value=''; msg.textContent='✓ Added'; msg.className='msg ok'; loadNotes(selectedChild.id);
+      });
+    });
 
     byId('saveChesslang').addEventListener('click', function(){
       if (!selectedChild) return;
