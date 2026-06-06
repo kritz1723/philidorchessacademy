@@ -266,8 +266,19 @@ async function main() {
         if (!Object.keys(stats).length) { console.warn('  (no values parsed — skipping upsert)'); continue; }
         var row = Object.assign({ child_id: kid.id, parent_id: kid.parent_id, updated_at: new Date().toISOString() }, stats);
         var up = await supabase.from('student_stats').upsert(row, { onConflict: 'child_id' });
-        if (up.error) console.error('  upsert failed: ' + up.error.message);
-        else console.log('  ✓ updated');
+        if (up.error) { console.error('  upsert failed: ' + up.error.message); continue; }
+        console.log('  ✓ updated');
+        // snapshot for progress trends (table may not exist yet -> ignore errors)
+        var snap = {
+          child_id: kid.id,
+          attendance_pct: stats.attendance_pct, leaderboard_points: stats.leaderboard_points,
+          hours_in_classroom: stats.hours_in_classroom, games_played: stats.games_played,
+          wins: stats.wins, losses: stats.losses, draws: stats.draws,
+          quizzes_completed: stats.quizzes_completed, problems_solved: stats.problems_solved,
+          quiz_points: stats.quiz_points, tournaments_played: stats.tournaments_played
+        };
+        var sh = await supabase.from('stats_history').insert(snap);
+        if (sh.error) console.warn('  history snapshot skipped: ' + sh.error.message);
       } catch (e) {
         console.error('  failed for ' + kid.name + ': ' + (e && e.message || e));
         await shot(page, 'kid-' + (kid.chesslang_id || i));
