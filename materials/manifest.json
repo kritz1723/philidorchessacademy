@@ -10,6 +10,26 @@
       "url": "materials/basics/basics-index.html"
     },
     {
+      "title": "Basics — The Board",
+      "url": "materials/basics/basics-board.html"
+    },
+    {
+      "title": "Basics — The Pieces",
+      "url": "materials/basics/basics-pieces.html"
+    },
+    {
+      "title": "Basics — How Pieces Move",
+      "url": "materials/basics/basics-movement.html"
+    },
+    {
+      "title": "Basics — Algebraic Notation",
+      "url": "materials/basics/basics-notation.html"
+    },
+    {
+      "title": "Basics — Check & Checkmate",
+      "url": "materials/basics/basics-check.html"
+    },
+    {
       "title": "Basics — Piece Values",
       "url": "materials/basics/basics-values.html"
     },
