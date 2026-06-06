@@ -1,0 +1,45 @@
+name: ChessLang stats sync
+
+on:
+  schedule:
+    - cron: '30 19 * * *'   # ~01:00 IST nightly
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (parse + log only, no DB writes)'
+        type: boolean
+        default: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: tools/chesslang-bot
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Run sync
+        working-directory: tools/chesslang-bot
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CHESSLANG_EMAIL: ${{ secrets.CHESSLANG_EMAIL }}
+          CHESSLANG_PASSWORD: ${{ secrets.CHESSLANG_PASSWORD }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+        run: node sync.js
+
+      - name: Upload debug screenshots (on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chesslang-debug
+          path: tools/chesslang-bot/debug/*.png
+          if-no-files-found: ignore
