@@ -213,7 +213,7 @@ async function main() {
     process.exit(1);
   }
   var supabase = createClient(sbUrl, sbKey, { auth: { persistSession: false } });
-  var res = await supabase.from('children').select('id,name,chesslang_id').not('chesslang_id', 'is', null);
+  var res = await supabase.from('children').select('id,name,parent_id,chesslang_id').not('chesslang_id', 'is', null);
   if (res.error) throw res.error;
   var kids = res.data || [];
   if (!kids.length) { console.log('No children have a chesslang_id set — nothing to sync.'); return; }
@@ -234,7 +234,7 @@ async function main() {
         console.log('• ' + kid.name + ': ' + JSON.stringify(stats));
         if (dry) continue;
         if (!Object.keys(stats).length) { console.warn('  (no values parsed — skipping upsert)'); continue; }
-        var row = Object.assign({ child_id: kid.id, updated_at: new Date().toISOString() }, stats);
+        var row = Object.assign({ child_id: kid.id, parent_id: kid.parent_id, updated_at: new Date().toISOString() }, stats);
         var up = await supabase.from('student_stats').upsert(row, { onConflict: 'child_id' });
         if (up.error) console.error('  upsert failed: ' + up.error.message);
         else console.log('  ✓ updated');
