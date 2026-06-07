@@ -118,6 +118,28 @@
   .fedhead h3{font-size:1.12rem}
   .fedhead span{flex:1;height:1px;background:var(--line)}
 
+  /* ---------- coach + achievements ---------- */
+  .coach-hero{display:flex;align-items:center;gap:18px}
+  .coach-badge{flex:none;width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    font-size:2rem;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-3));box-shadow:0 10px 24px -10px rgba(79,99,224,.6)}
+  .timeline{list-style:none;display:flex;flex-direction:column;gap:0}
+  .timeline li{display:flex;gap:16px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .timeline li:last-child{border-bottom:none}
+  .timeline .tl-when{flex:none;width:88px;font-weight:700;color:var(--accent)}
+  .timeline .tl-what{flex:1;color:var(--ink-soft)}
+  .timeline .tl-what strong{color:var(--ink)}
+  .hon h4{font-size:1.02rem;margin-bottom:5px}
+  .hon p{font-size:.86rem;color:var(--ink-soft)}
+  .medaltable{width:100%;border-collapse:collapse;font-size:.9rem;min-width:520px}
+  .medaltable th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);padding:9px 12px;border-bottom:1px solid var(--line)}
+  .medaltable td{padding:9px 12px;border-bottom:1px solid var(--line);color:var(--ink-soft)}
+  .medaltable tr:last-child td{border-bottom:none}
+  .medaltable td:first-child{color:var(--ink);font-weight:600}
+  .medal{font-size:.74rem;font-weight:700;padding:.2em .7em;border-radius:999px}
+  .medal.g{background:rgba(191,155,84,.18);color:#8a6b1f}
+  .medal.s{background:rgba(120,130,150,.18);color:#5a6478}
+  .medal.b{background:rgba(176,110,70,.16);color:#8a4f28}
+
   .view{animation:fade .34s ease}
   .view[hidden]{display:none}
   @keyframes fade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
@@ -274,6 +296,8 @@
     <button type="button" data-view="topics"><span class="ic">📘</span>Topics</button>
     <button type="button" data-view="library"><span class="ic">📚</span>Library</button>
     <button type="button" data-view="store"><span class="ic">🛍️</span>Store</button>
+    <button type="button" data-view="coach"><span class="ic">🧑‍🏫</span>Your Coach</button>
+    <button type="button" data-view="achievements"><span class="ic">🏅</span>Achievements</button>
     <button type="button" data-view="world"><span class="ic">🌍</span>Around the World</button>
   </nav>
   <div class="shell-main"><div class="wrap">
@@ -455,6 +479,72 @@
     <div class="panel-head"><h2>Recommended gear</h2><p>Hand-picked boards &amp; books to practise at home.</p></div>
     <div class="cards grid3" id="products">
       <div class="card"><span class="empty">No products yet.</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== YOUR COACH ===================== -->
+  <section class="view" data-view="coach" hidden>
+    <div class="panel-head"><h2>Your Coach</h2><p>Meet the coach guiding your child’s chess journey.</p></div>
+
+    <div class="card coach-hero">
+      <div class="coach-badge">♟</div>
+      <div>
+        <h3 style="font-size:1.5rem;margin-bottom:2px">Pon N Krithikha</h3>
+        <p style="color:var(--ink-soft);font-weight:600">Women International Master (WIM) · FIDE Rated</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <p style="margin-bottom:10px">Pon N Krithikha is a <strong>Women International Master</strong> and FIDE-rated player. She began playing chess at the age of <strong>7</strong> and won her first state championship at <strong>9</strong> — continuing a winning streak that took her onto the international stage.</p>
+      <p style="margin-bottom:10px">In <strong>2004</strong>, at age 11, she won an <strong>Asian gold medal</strong>. By <strong>2007</strong> she had become the youngest player to qualify for the <strong>Indian Women Premier Chess Championship</strong>. In <strong>2012</strong> she completed her WIM title, becoming the <strong>17th Women International Master of India</strong> and the 6th in her state.</p>
+      <p>She has <strong>represented India more than 25 times</strong>, played for <strong>Hindustan Petroleum (2009–2011)</strong>, led <strong>Anna University</strong> in zonal tournaments, and was awarded <strong>cash and a citation from the Ministry of Sports</strong>. Off the board, she is an Engineering graduate in Electronics &amp; Communication Engineering from <strong>Anna University (CEG campus)</strong>.</p>
+    </div>
+
+    <div class="section-title"><span class="ico">🗓️</span><h2 style="font-size:1.12rem">Career timeline</h2></div>
+    <div class="card">
+      <ul class="timeline">
+        <li><span class="tl-when">Age 7</span><span class="tl-what">Began playing chess.</span></li>
+        <li><span class="tl-when">Age 9</span><span class="tl-what">Won her first <strong>state championship</strong>.</span></li>
+        <li><span class="tl-when">2004</span><span class="tl-what">Won an <strong>Asian gold medal</strong> at age 11.</span></li>
+        <li><span class="tl-when">2007</span><span class="tl-what">Youngest player to qualify for the <strong>Indian Women Premier Chess Championship</strong>.</span></li>
+        <li><span class="tl-when">2009–11</span><span class="tl-what">Represented <strong>Hindustan Petroleum</strong>.</span></li>
+        <li><span class="tl-when">2012</span><span class="tl-what">Completed WIM title — <strong>17th Women International Master of India</strong>.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== ACHIEVEMENTS ===================== -->
+  <section class="view" data-view="achievements" hidden>
+    <div class="panel-head"><h2>Achievements &amp; Record</h2><p>Distinctions earned across national and international competition.</p></div>
+
+    <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">
+      <div class="card hon"><h4>17th WIM of India</h4><p>The 17th Women International Master in India, and 6th in her state.</p></div>
+      <div class="card hon"><h4>Commonwealth Gold Medallist</h4><p>Gold at Commonwealth Chess Championships.</p></div>
+      <div class="card hon"><h4>National Junior Champion</h4><p>National junior champion in Indian chess.</p></div>
+      <div class="card hon"><h4>FIDE Rated Player</h4><p>An internationally FIDE-rated player.</p></div>
+      <div class="card hon"><h4>Represented India 25+ times</h4><p>In more than 25 competitions.</p></div>
+      <div class="card hon"><h4>Ministry of Sports honour</h4><p>Awarded cash and a citation by the Ministry of Sports.</p></div>
+      <div class="card hon"><h4>Hindustan Petroleum (2009–2011)</h4><p>Represented HPCL on the board.</p></div>
+      <div class="card hon"><h4>Led Anna University</h4><p>Led Anna University in zonal tournaments.</p></div>
+    </div>
+
+    <div class="section-title" style="margin-top:24px"><span class="ico">🏆</span><h2 style="font-size:1.12rem">International medals</h2></div>
+    <div class="card" style="overflow-x:auto">
+      <table class="medaltable">
+        <thead><tr><th>Championship</th><th>Category</th><th>Location &amp; year</th><th>Medal</th></tr></thead>
+        <tbody>
+          <tr><td>Commonwealth Chess Championship</td><td>Under-14 Girls</td><td>Mumbai, 2004</td><td><span class="medal g">Gold</span></td></tr>
+          <tr><td>Asian Youth Chess Championship</td><td>Under-12 Girls (Individual)</td><td>Singapore, 2004</td><td><span class="medal g">Gold</span></td></tr>
+          <tr><td>Asian Youth Chess Championship</td><td>Under-12 Girls (Team)</td><td>Singapore, 2004</td><td><span class="medal g">Gold</span></td></tr>
+          <tr><td>Commonwealth Chess Championship</td><td>Under-16 Girls</td><td>Mumbai, 2006</td><td><span class="medal g">Gold</span></td></tr>
+          <tr><td>Commonwealth Chess Championship</td><td>Under-16 Girls</td><td>Delhi, 2007</td><td><span class="medal g">Gold</span></td></tr>
+          <tr><td>Asian Schools Chess Championship</td><td>Under-16 Girls</td><td>Sri Lanka, 2008</td><td><span class="medal g">Gold</span></td></tr>
+          <tr><td>World Youth Chess Championship</td><td>Under-16 Girls (Team)</td><td>Vietnam, 2008</td><td><span class="medal s">Silver</span></td></tr>
+          <tr><td>Asian Youth Chess Championship</td><td>Under-18 Girls</td><td>Delhi, 2009</td><td><span class="medal s">Silver</span></td></tr>
+          <tr><td>Asian Youth Chess Championship</td><td>Under-14 Girls</td><td>Iran, 2006</td><td><span class="medal b">Bronze</span></td></tr>
+          <tr><td>Commonwealth Chess Championship</td><td>Under-18 Girls</td><td>Delhi, 2009</td><td><span class="medal b">Bronze</span></td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
