@@ -381,6 +381,14 @@
     <div class="f" style="margin-bottom:14px"><label>Child's name</label><input id="ke_name" type="text"></div>
     <div class="f" style="margin-bottom:14px"><label>Level</label>
       <select id="ke_level"><option value="">Select…</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+
+    <div class="f" style="margin-bottom:6px"><label>Parents who can view this child</label></div>
+    <ul class="plist" id="ke_guardians" style="border:1px solid var(--line);border-radius:10px;margin-bottom:10px;max-height:170px;overflow:auto"></ul>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+      <select id="ke_addParent" style="flex:1;padding:.55em .7em;border:1px solid var(--line);border-radius:10px;background:var(--cream)"><option value="">Add another parent…</option></select>
+      <button type="button" class="btn btn-ghost btn-xs" id="ke_addGuardian">Add</button>
+    </div>
+
     <div class="modal-msg" id="keMsg"></div>
     <div class="modal-bar">
       <button type="button" class="btn btn-ghost" id="keCancel">Cancel</button>
@@ -550,7 +558,50 @@
 
     // edit child (name + level)
     var KID_EDIT=null;
-    function openChildEdit(c){ KID_EDIT=c; byId('ke_name').value=c.name||''; byId('ke_level').value=c.level||''; byId('keMsg').textContent=''; byId('kEditModal').classList.add('open'); }
+    function openChildEdit(c){ KID_EDIT=c; byId('ke_name').value=c.name||''; byId('ke_level').value=c.level||''; byId('keMsg').textContent=''; byId('kEditModal').classList.add('open'); loadGuardians(c); }
+
+    // ---- co-parents / guardians for a child ----
+    function pName(id){ var p=PARENTS[id]; return p?(p.full_name||'(no name)'):'(unknown)'; }
+    function loadGuardians(c){
+      var ul=byId('ke_guardians'); ul.innerHTML='<li style="cursor:default"><span>Loading…</span></li>';
+      client.from('child_guardians').select('user_id').eq('child_id', c.id).then(function(r){
+        var extra=(r.data||[]).map(function(x){return x.user_id;});
+        ul.innerHTML='';
+        // owner (always present, can't remove here)
+        var li0=document.createElement('li'); li0.style.cursor='default';
+        li0.innerHTML='<b>'+esc(pName(c.parent_id))+'</b><span>Primary parent</span>';
+        ul.appendChild(li0);
+        extra.forEach(function(uid){
+          var li=document.createElement('li'); li.style.cursor='default';
+          li.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">'+
+            '<span><b>'+esc(pName(uid))+'</b><span style="display:block;font-size:.8rem;color:var(--ink-soft)">Co-parent</span></span>'+
+            '<button class="btn btn-danger btn-xs" type="button">Remove</button></div>';
+          li.querySelector('button').addEventListener('click', function(){
+            client.from('child_guardians').delete().eq('child_id', c.id).eq('user_id', uid).then(function(d){
+              if (!d.error) loadGuardians(c);
+            });
+          });
+          ul.appendChild(li);
+        });
+        // build the "add" dropdown excluding owner + existing guardians
+        var sel=byId('ke_addParent'); sel.innerHTML='<option value="">Add another parent…</option>';
+        var taken={}; taken[c.parent_id]=1; extra.forEach(function(u){taken[u]=1;});
+        Object.keys(PARENTS).forEach(function(pid){
+          if (taken[pid]) return;
+          var o=document.createElement('option'); o.value=pid; o.textContent=pName(pid); sel.appendChild(o);
+        });
+      });
+    }
+    byId('ke_addGuardian').addEventListener('click', function(){
+      if (!KID_EDIT) return;
+      var uid=byId('ke_addParent').value; if (!uid) return;
+      var msg=byId('keMsg'); msg.style.color='var(--ink-soft)'; msg.textContent='Linking…';
+      client.from('child_guardians').insert({ child_id:KID_EDIT.id, user_id:uid }).then(function(r){
+        if (r.error){ msg.style.color='var(--danger)'; msg.textContent='Error: '+r.error.message; return; }
+        msg.textContent=''; loadGuardians(KID_EDIT);
+      });
+    });
+
     byId('keCancel').addEventListener('click', function(){ byId('kEditModal').classList.remove('open'); });
     byId('kEditModal').addEventListener('click', function(e){ if(e.target===byId('kEditModal')) byId('kEditModal').classList.remove('open'); });
     byId('keSave').addEventListener('click', function(){
