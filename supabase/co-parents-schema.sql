@@ -34,12 +34,13 @@ as $$
                where g.child_id = p_child and g.user_id = auth.uid());
 $$;
 
--- 3) RLS on child_guardians: viewers can read their links; admins manage.
+-- 3) RLS on child_guardians: ADMINS ONLY.
+--    Parents must never see who else can view a child, so this table is not
+--    readable by parents at all. The parent dashboard uses get_my_children()
+--    (security definer, below) and never reads this table directly.
 drop policy if exists "read guardian links"   on public.child_guardians;
-create policy "read guardian links" on public.child_guardians for select
-  using ( public.can_access_child(child_id) );
 drop policy if exists "admin writes guardians" on public.child_guardians;
-create policy "admin writes guardians" on public.child_guardians for all
+create policy "admin manages guardians" on public.child_guardians for all
   using ( public.is_admin() ) with check ( public.is_admin() );
 
 -- 4) Extra READ policies so a guardian sees the child's data.
