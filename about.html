@@ -275,6 +275,22 @@
   header .btn-gold{background:var(--gold);color:var(--ink)}
   header .nav-toggle{color:var(--cream)}
 </style>
+<style>
+  .navgroup{position:relative;display:inline-block}
+  .navgroup>summary{list-style:none;cursor:pointer;font-weight:600;font-size:.92rem;color:inherit;opacity:.85;user-select:none}
+  .navgroup>summary::-webkit-details-marker{display:none}
+  .navgroup>summary::after{content:" \25BE";font-size:.8em}
+  .navgroup[open]>summary{opacity:1;color:var(--gold)}
+  .navgroup-menu{position:absolute;top:calc(100% + 12px);left:0;min-width:200px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 44px -18px rgba(12,19,34,.5);padding:8px;z-index:80}
+  .navgroup-menu a{display:block !important;padding:.55em .85em;border-radius:8px;color:var(--ink) !important;font-weight:600;font-size:.9rem;opacity:1 !important}
+  .navgroup-menu a:hover{background:var(--cream);color:var(--ink) !important}
+  @media (max-width:760px){
+    .navgroup{display:block}
+    .navgroup-menu{position:static;background:transparent;border:none;box-shadow:none;padding:4px 0 4px 14px;min-width:0}
+    .navgroup-menu a{color:var(--cream) !important}
+    .navgroup-menu a:hover{background:transparent}
+  }
+</style>
 </head>
 <body>
 
@@ -285,11 +301,16 @@
       <span style="line-height:1.1"><b>Philidor</b><span>Chess Academy</span></span>
     </a>
     <div class="nav-links" id="navlinks">
-      <a href="parent-dashboard.html">Portal</a>
-      <a href="about.html" class="active">Coach</a>
-      <a href="achievements.html">Achievements</a>
-      <a href="programs.html">Programs</a>
-      <a href="contact.html">Contact</a>
+      <a href="parent-dashboard.html">Dashboard</a>
+      <details class="navgroup">
+        <summary>About the Academy</summary>
+        <div class="navgroup-menu">
+          <a href="about.html">Coach</a>
+          <a href="achievements.html">Achievements</a>
+          <a href="programs.html">Programs</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </details>
       <a id="navAdmin" href="admin.html" style="display:none">Admin</a>
       <a class="btn btn-gold" href="#" id="navSignout">Sign out</a>
     </div>
