@@ -54,6 +54,14 @@
   .topnav{display:flex;gap:24px;align-items:center;margin:0 auto 0 38px}
   .topnav a{color:var(--cream);font-weight:600;font-size:.9rem;opacity:.82;transition:.18s}
   .topnav a:hover{opacity:1;color:var(--gold)}
+  .navgroup{position:relative;display:inline-block}
+  .navgroup>summary{list-style:none;cursor:pointer;font-weight:600;font-size:.9rem;color:var(--cream);opacity:.85;user-select:none}
+  .navgroup>summary::-webkit-details-marker{display:none}
+  .navgroup>summary::after{content:" \25BE";font-size:.8em}
+  .navgroup[open]>summary{opacity:1;color:var(--gold)}
+  .navgroup-menu{position:absolute;top:calc(100% + 14px);left:0;min-width:200px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 44px -18px rgba(12,19,34,.5);padding:8px;z-index:80}
+  .navgroup-menu a{display:block;padding:.55em .85em;border-radius:8px;color:var(--ink);font-weight:600;font-size:.9rem}
+  .navgroup-menu a:hover{background:var(--cream)}
   @media (max-width:760px){ .topnav{display:none} }
 
   #gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:100;font-family:"Fraunces";font-style:italic;color:var(--ink-soft)}
@@ -287,10 +295,15 @@
       <span style="line-height:1.1"><b>Philidor</b><small>Chess Academy</small></span>
     </a>
     <nav class="topnav" aria-label="Pages">
-      <a href="about.html">Coach</a>
-      <a href="achievements.html">Achievements</a>
-      <a href="programs.html">Programs</a>
-      <a href="contact.html">Contact</a>
+      <details class="navgroup">
+        <summary>About the Academy</summary>
+        <div class="navgroup-menu">
+          <a href="about.html">Coach</a>
+          <a href="achievements.html">Achievements</a>
+          <a href="programs.html">Programs</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </details>
     </nav>
     <div style="display:flex;gap:10px">
       <a id="adminLink" class="btn btn-outline" href="admin.html" style="display:none">Admin</a>
