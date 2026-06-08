@@ -794,7 +794,12 @@
     }
 
     function loadChildren(){
-      client.from('children').select('*').eq('parent_id', VIEW_PARENT).order('created_at').then(function (r){
+      // Admin previewing a parent: that parent's own children. Otherwise:
+      // every child this user can view — their own AND ones they co-parent.
+      var q = PREVIEW
+        ? client.from('children').select('*').eq('parent_id', VIEW_PARENT).order('created_at')
+        : client.rpc('get_my_children');
+      q.then(function (r){
         CHILDREN = r.data || [];
         renderKidbar();
         if (!CHILDREN.length){
