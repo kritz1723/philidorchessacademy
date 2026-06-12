@@ -3,7 +3,12 @@
 Known items to revisit later (not blocking the working sync).
 
 ## 1. Quiz fields not captured yet
-**Status:** open · low priority (deferred 2026-06-06 per request)
+**Status:** addressed — now parses the quiz summary from BOTH the
+`/overall` and `/quiz` tabs with flexible patterns (accepts "X" or
+"X / Y"), scopes points/time to the quiz tab, and logs a `quiz-debug:`
+line of the raw quiz text each run so the exact label wording can be
+confirmed against a student who actually has quiz activity. If a field
+still doesn't fill, read `quiz-debug:` in the Actions log and tighten.
 
 **Symptom:** `quizzes_completed`, `quizzes_total`, `problems_solved`,
 `problems_total`, `quiz_points`, `quiz_time_taken` never appear in the
