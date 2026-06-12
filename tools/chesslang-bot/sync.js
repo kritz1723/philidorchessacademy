@@ -205,14 +205,25 @@ async function scrapeStudent(page, uuid) {
   if (gW) { stats.white_games = num(gW, /Total games\s*(\d+)/i); stats.white_wins = num(gW, /Total wins\s*(\d+)/i); stats.white_losses = num(gW, /Total lost\s*(\d+)/i); stats.white_draws = num(gW, /Total drawn\s*(\d+)/i); }
   if (gB) { stats.black_games = num(gB, /Total games\s*(\d+)/i); stats.black_wins = num(gB, /Total wins\s*(\d+)/i); stats.black_losses = num(gB, /Total lost\s*(\d+)/i); stats.black_draws = num(gB, /Total drawn\s*(\d+)/i); }
 
-  // ----- Quiz (best-effort; refine labels after first run) -----
+  // ----- Quiz: the Overall tab lists the summary; the /quiz tab has detail.
+  //        Parse from BOTH and accept either "X" or "X / Y" formats. -----
   var q = await tabText(page, uuid, 'quiz');
-  var quizzes = q.match(/Total quizzes\s*(?:completed\s*)?(\d+)\s*\/\s*(\d+)/i);
-  if (quizzes) { stats.quizzes_completed = Number(quizzes[1]); stats.quizzes_total = Number(quizzes[2]); }
-  var probs = q.match(/Total problems\s*(?:solved\s*)?(\d+)\s*\/\s*(\d+)/i);
-  if (probs) { stats.problems_solved = Number(probs[1]); stats.problems_total = Number(probs[2]); }
-  stats.quiz_points = num(q, /Total (?:quiz )?points\s*([\d,]+)/i);
-  stats.quiz_time_taken = str(q, /Total time (?:taken|spent)[^\n]*?\s([^\n]+)/i);
+  var qsrc = (c || '') + '\n' + (q || '');
+  var mQ = qsrc.match(/quizz?es?\s*(?:completed|attempted|taken|done)\s*:?\s*(\d+)\s*(?:\/\s*(\d+))?/i);
+  if (mQ) { stats.quizzes_completed = Number(mQ[1]); if (mQ[2] != null) stats.quizzes_total = Number(mQ[2]); }
+  var mP = qsrc.match(/problems?\s*(?:solved|attempted|completed)\s*:?\s*(\d+)\s*(?:\/\s*(\d+))?/i);
+  if (mP) { stats.problems_solved = Number(mP[1]); if (mP[2] != null) stats.problems_total = Number(mP[2]); }
+  // points: only count quiz-scoped points (avoid "leaderboard points")
+  var mPts = qsrc.match(/(?:total\s*)?quiz\s*points\s*:?\s*([\d,]+)/i) || q.match(/(?:total\s*)?points\s*scored\s*:?\s*([\d,]+)/i);
+  if (mPts) stats.quiz_points = Number(String(mPts[1]).replace(/,/g, ''));
+  // time: only from the quiz tab so it can't pick up game-play time
+  var mT = q.match(/(?:total\s*)?time\s*(?:taken|spent)[^\n]*?\s([0-9][^\n]*)/i);
+  if (mT && !/^[-—]$/.test(mT[1].trim())) stats.quiz_time_taken = mT[1].trim();
+  // diagnostics: surface raw quiz-related lines so labels can be verified
+  // against a student who actually has quiz activity.
+  var qlines = qsrc.split('\n').map(function (l) { return l.trim(); })
+    .filter(function (l) { return l && /quiz|problem|points scored/i.test(l); }).slice(0, 14);
+  if (qlines.length) console.log('  quiz-debug: ' + JSON.stringify(qlines));
 
   // ----- Tournament (overall + podium) -----
   var t = await tabText(page, uuid, 'tournament');
